@@ -1,7 +1,11 @@
 <div align="center">
 
 <!-- Animated Wave Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00c9ff,100:9b5de5&amp;height=260&amp;section=header&amp;text=VoiceGuard%20AI&amp;fontSize=60&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=35&amp;desc=Real-Time%20Neural%20Voice%20Deepfake%20Forensic%20Defense%20Platform&amp;descFontSize=17&amp;descAlignY=55" width="100%" alt="VoiceGuard AI Header" />
+<img
+  src="https://capsule-render.vercel.app/api?type=waving&color=0:00c9ff,100:9b5de5&height=260&section=header&text=VoiceGuard%20AI&fontSize=60&fontColor=ffffff&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20Forensic%20Defense%20Platform&descFontSize=17&descAlignY=58"
+  width="100%"
+  alt="VoiceGuard AI Header"
+/>
 
 <!-- Subtitle -->
 <h2>
