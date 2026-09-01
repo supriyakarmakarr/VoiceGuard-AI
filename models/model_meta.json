@@ -1,0 +1,51 @@
+{
+  "project": "SIH26104 - VoiceGuard AI",
+  "timestamp": "2026-09-01 19:40:30",
+  "dataset": {
+    "num_real_samples": 40,
+    "num_fake_samples": 40,
+    "sample_rate_hz": 16000,
+    "duration_sec": 4.0
+  },
+  "baseline_model": {
+    "type": "Random Forest + Gradient Boosting Soft-Voting Ensemble",
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "cv_accuracy_mean": 1.0,
+      "num_features": 142,
+      "train_samples": 60,
+      "test_samples": 20
+    },
+    "weights_file": "baseline_rf.pkl"
+  },
+  "deep_learning_model": {
+    "type": "ResNet-SE Spectrogram 2D-CNN (Channel Attention)",
+    "metrics": {
+      "validation_accuracy": 1.0,
+      "final_train_accuracy": 1.0,
+      "epochs_trained": 25,
+      "architecture": "ResNet-SE Spectrogram 2D-CNN",
+      "device": "cpu"
+    },
+    "weights_file": "deep_cnn.pt"
+  },
+  "risk_thresholds": {
+    "low_risk_max": 30.0,
+    "medium_risk_max": 70.0,
+    "high_risk_min": 70.0
+  }
+}
