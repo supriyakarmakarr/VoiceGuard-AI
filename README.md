@@ -1,11 +1,25 @@
 <div align="center">
 
-# 🛡️ VOICEGUARD AI
-### Real-Time Neural Voice Deepfake & Clone Forensic Defense Platform
-**Smart India Hackathon (SIH) — Problem Statement ID: SIH26104**
+<!-- Animated Wave Header Banner -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=260&section=header&text=🛡️%20VOICEGUARD%20AI&fontSize=62&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&descFontSize=18&descAlignY=58&descAlign=50" width="100%" alt="VoiceGuard AI Header" />
 
-<br/>
+<!-- Animated Shield GIF + Subtitle -->
+<h2>
+  <img src="https://media.giphy.com/media/L1R1tvI9svkIWwpVYr/giphy.gif" width="34" alt="Shield" />
+  <span>Detect. Explain. Defend. — Real-Time Voice Deepfake Forensics</span>
+  <img src="https://media.giphy.com/media/L1R1tvI9svkIWwpVYr/giphy.gif" width="34" alt="Shield" />
+</h2>
 
+<!-- Animated Typing Subtitle -->
+<a href="https://git.io/typing-svg">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=18&duration=3000&pause=1000&color=00F5D4&center=true&vCenter=true&width=700&lines=Dual+AI+Detection+Engine%3A+ResNet-SE+CNN+%2B+ML+Ensemble;Sub-20ms+Real-Time+Inference+Latency;Live+Microphone+Interception+%26+Streaming+Analysis;Forensic-Grade+Explainability+for+Every+Verdict;Multilingual+Advisory%3A+English+%7C+%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80+%7C+%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE" alt="Typing SVG" />
+</a>
+
+<sub><b>Smart India Hackathon (SIH) — Problem Statement ID: SIH26104</b></sub>
+
+<br/><br/>
+
+<!-- Badges -->
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-ResNet--SE%20CNN-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-High%20Performance%20REST-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -14,6 +28,14 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
+
+<!-- Live Status Badges -->
+<img src="https://img.shields.io/badge/Accuracy-100%25-brightgreen?style=flat-square" alt="Accuracy" />
+<img src="https://img.shields.io/badge/Latency-~18.4ms-blue?style=flat-square" alt="Latency" />
+<img src="https://img.shields.io/badge/Languages-EN%20%7C%20HI%20%7C%20BN-orange?style=flat-square" alt="Languages" />
+<img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status" />
+
+<br/><br/>
 
 [🌟 Key Capabilities](#-key-capabilities) •
 [🏗️ Architecture](#-system-architecture) •
@@ -24,6 +46,8 @@
 [👥 Team Division](#-hackathon-team-division-6-members)
 
 <br/>
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="650" alt="Divider Animation" />
 
 ---
 
@@ -56,6 +80,10 @@
 </div>
 
 <br/>
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/74038190/212284158-e840e285-664b-44d7-b79b-e264b5e54825.gif" width="500" alt="Scanning Animation" />
+</div>
 
 ---
 
@@ -354,10 +382,32 @@ sih26104-voiceguard-ai/
 
 ---
 
+## 🌟 Support
+
+Agar yeh project pasand aaye toh ek ⭐️ **Star** zaroor dein!
+
+<div align="center">
+
+<a href="https://github.com/your-username/sih26104-voiceguard-ai">
+  <img src="https://img.shields.io/github/stars/your-username/sih26104-voiceguard-ai?style=social" alt="Stars" />
+</a>
+<a href="https://github.com/your-username/sih26104-voiceguard-ai/fork">
+  <img src="https://img.shields.io/github/forks/your-username/sih26104-voiceguard-ai?style=social" alt="Forks" />
+</a>
+
+<br/><br/>
+
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-<div align="center">
-  <sub>Developed for <b>Smart India Hackathon (SIH)</b> • Powered by <b>PyTorch</b> & <b>Librosa DSP</b></sub>
+<br/>
+
+<sub>Developed for <b>Smart India Hackathon (SIH)</b> • Powered by <b>PyTorch</b> & <b>Librosa DSP</b></sub>
+
+<br/><br/>
+
+<!-- Animated Wave Footer Banner -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=140&section=footer" width="100%" alt="VoiceGuard AI Footer" />
+
 </div>
