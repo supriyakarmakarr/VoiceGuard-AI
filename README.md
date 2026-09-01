@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Wave Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=1,12,24,30&height=260&section=header&text=VOICEGUARD%20AI&fontSize=62&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&descFontSize=18&descAlignY=58&descAlign=50" width="100%" alt="VoiceGuard AI Header" />
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=gradient&amp;customColorList=1,12,24,30&amp;height=260&amp;section=header&amp;text=VOICEGUARD%20AI&amp;fontSize=62&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&amp;descFontSize=18&amp;descAlignY=58&amp;descAlign=50" width="100%" alt="VoiceGuard AI Header" />
 
 <!-- Subtitle -->
 <h2>
@@ -10,7 +10,7 @@
 
 <!-- Animated Typing Subtitle -->
 <a href="https://git.io/typing-svg">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=18&duration=3000&pause=1000&color=00F5D4&center=true&vCenter=true&width=700&lines=Dual+AI+Detection+Engine%3A+ResNet-SE+CNN+%2B+ML+Ensemble;Sub-20ms+Real-Time+Inference+Latency;Live+Microphone+Interception+%26+Streaming+Analysis;Forensic-Grade+Explainability+for+Every+Verdict;Multilingual+Advisory%3A+English+%7C+%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80+%7C+%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&amp;weight=600&amp;size=18&amp;duration=3000&amp;pause=1000&amp;color=00F5D4&amp;center=true&amp;vCenter=true&amp;width=700&amp;lines=Dual+AI+Detection+Engine%3A+ResNet-SE+CNN+%2B+ML+Ensemble;Sub-20ms+Real-Time+Inference+Latency;Live+Microphone+Interception+%26+Streaming+Analysis;Forensic-Grade+Explainability+for+Every+Verdict;Multilingual+Advisory%3A+English+%7C+%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80+%7C+%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE" alt="Typing SVG" />
 </a>
 
 <sub><b>Smart India Hackathon (SIH) — Problem Statement ID: SIH26104</b></sub>
@@ -402,6 +402,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 <br/><br/>
 
 <!-- Animated Wave Footer Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=1,12,24,30&height=140&section=footer" width="100%" alt="VoiceGuard AI Footer" />
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=gradient&amp;customColorList=1,12,24,30&amp;height=140&amp;section=footer" width="100%" alt="VoiceGuard AI Footer" />
 
 </div>
