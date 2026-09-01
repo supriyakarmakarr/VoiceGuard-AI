@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8B0000,50:B22222,100:EF4444&height=220&section=header&text=VoiceGuard%20AI&fontSize=46&fontColor=ffffff&animation=fadeIn&fontAlignY=36&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense&descAlignY=58&descSize=16" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8B0000,100:EF4444&height=220&section=header&text=VoiceGuard%20AI&fontSize=46&fontColor=ffffff&animation=fadeIn&fontAlignY=36&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense&descAlignY=58&descSize=16" width="100%"/>
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=2600&pause=700&color=EF4444&center=true&vCenter=true&width=650&lines=Smart+India+Hackathon+%E2%80%94+SIH26104;Detecting+AI+Voice+Clones+in+Real+Time;Sub-20ms+Forensic+Risk+Scoring;Dual+AI+Engine+%2B+DSP+Explainability" alt="Typing SVG" />
 
@@ -139,6 +139,6 @@ sih26104-voiceguard-ai/
 
 📄 **MIT License** • Built for **Smart India Hackathon** with **PyTorch** & **Librosa**
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8B0000,50:B22222,100:EF4444&height=110&section=footer&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:8B0000,100:EF4444&height=110&section=footer&animation=fadeIn" width="100%"/>
 
 </div>
