@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Wave Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=gradient&amp;customColorList=1,12,24,30&amp;height=260&amp;section=header&amp;text=VOICEGUARD%20AI&amp;fontSize=62&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&amp;descFontSize=18&amp;descAlignY=58&amp;descAlign=50" width="100%" alt="VoiceGuard AI Header" />
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00c9ff,100:9b5de5&amp;height=260&amp;section=header&amp;text=VoiceGuard%20AI&amp;fontSize=60&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=35&amp;desc=Real-Time%20Neural%20Voice%20Deepfake%20Forensic%20Defense%20Platform&amp;descFontSize=17&amp;descAlignY=55" width="100%" alt="VoiceGuard AI Header" />
 
 <!-- Subtitle -->
 <h2>
@@ -402,6 +402,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 <br/><br/>
 
 <!-- Animated Wave Footer Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=gradient&amp;customColorList=1,12,24,30&amp;height=140&amp;section=footer" width="100%" alt="VoiceGuard AI Footer" />
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00c9ff,100:9b5de5&amp;height=140&amp;section=footer" width="100%" alt="VoiceGuard AI Footer" />
 
 </div>
