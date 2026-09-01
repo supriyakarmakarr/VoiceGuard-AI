@@ -1,13 +1,11 @@
 <div align="center">
 
 <!-- Animated Wave Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=260&section=header&text=🛡️%20VOICEGUARD%20AI&fontSize=62&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&descFontSize=18&descAlignY=58&descAlign=50" width="100%" alt="VoiceGuard AI Header" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=1,12,24,30&height=260&section=header&text=VOICEGUARD%20AI&fontSize=62&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20%26%20Clone%20Forensic%20Defense%20Platform&descFontSize=18&descAlignY=58&descAlign=50" width="100%" alt="VoiceGuard AI Header" />
 
-<!-- Animated Shield GIF + Subtitle -->
+<!-- Subtitle -->
 <h2>
-  <img src="https://media.giphy.com/media/L1R1tvI9svkIWwpVYr/giphy.gif" width="34" alt="Shield" />
-  <span>Detect. Explain. Defend. — Real-Time Voice Deepfake Forensics</span>
-  <img src="https://media.giphy.com/media/L1R1tvI9svkIWwpVYr/giphy.gif" width="34" alt="Shield" />
+  🛡️ <span>Detect. Explain. Defend. — Real-Time Voice Deepfake Forensics</span> 🛡️
 </h2>
 
 <!-- Animated Typing Subtitle -->
@@ -80,10 +78,6 @@
 </div>
 
 <br/>
-
-<div align="center">
-<img src="https://user-images.githubusercontent.com/74038190/212284158-e840e285-664b-44d7-b79b-e264b5e54825.gif" width="500" alt="Scanning Animation" />
-</div>
 
 ---
 
@@ -408,6 +402,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 <br/><br/>
 
 <!-- Animated Wave Footer Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=140&section=footer" width="100%" alt="VoiceGuard AI Footer" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=1,12,24,30&height=140&section=footer" width="100%" alt="VoiceGuard AI Footer" />
 
 </div>
