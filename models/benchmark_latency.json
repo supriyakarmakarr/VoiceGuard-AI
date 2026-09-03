@@ -1,0 +1,72 @@
+{
+  "device": "CPU",
+  "torch_version": "2.13.0+cpu",
+  "cold_start_load_ms": 154.7,
+  "first_inference_ms": 2789.9,
+  "end_to_end_steady_state_ms": {
+    "mean_ms": 1318.36,
+    "median_ms": 1331.96,
+    "p95_ms": 1538.25,
+    "p99_ms": 1605.8
+  },
+  "breakdown": {
+    "preprocessing": {
+      "mean_ms": 1.01,
+      "median_ms": 0.95,
+      "p95_ms": 1.61,
+      "p99_ms": 1.66
+    },
+    "spectrogram_extraction": {
+      "mean_ms": 6.83,
+      "median_ms": 6.67,
+      "p95_ms": 10.07,
+      "p99_ms": 13.48
+    },
+    "tabular_features": {
+      "mean_ms": 449.23,
+      "median_ms": 447.87,
+      "p95_ms": 544.61,
+      "p99_ms": 557.38
+    },
+    "deep_cnn_inference": {
+      "mean_ms": 34.18,
+      "median_ms": 27.0,
+      "p95_ms": 46.05,
+      "p99_ms": 136.06
+    },
+    "baseline_ml_inference": {
+      "mean_ms": 471.31,
+      "median_ms": 478.29,
+      "p95_ms": 551.53,
+      "p99_ms": 588.89
+    },
+    "forensic_signals": {
+      "mean_ms": 350.83,
+      "median_ms": 357.71,
+      "p95_ms": 409.6,
+      "p99_ms": 426.29
+    },
+    "risk_calibration": {
+      "mean_ms": 4.96,
+      "median_ms": 4.13,
+      "p95_ms": 9.5,
+      "p99_ms": 13.79
+    },
+    "total_end_to_end": {
+      "mean_ms": 1318.36,
+      "median_ms": 1331.96,
+      "p95_ms": 1538.25,
+      "p99_ms": 1605.8
+    }
+  },
+  "quantization": {
+    "fp32_mean_ms": 34.18,
+    "int8_mean_ms": 20.92,
+    "speedup_factor": 1.63
+  },
+  "target_recommendation": {
+    "deployment_target": "Render Free / 1 vCPU Container",
+    "practical_expected_latency_ms": 1713.9,
+    "meets_realtime_budget_50ms": false
+  }
+}

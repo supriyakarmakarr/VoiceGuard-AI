@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-09-04 00:26:01",
+  "grandma_false_positive_test": {
+    "test_name": "Grandma False Positive & Adversarial Robustness Test",
+    "all_passed": true,
+    "scenarios": {
+      "Clean_Baseline": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 5.6,
+        "max_risk_score": 6.4,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      },
+      "Distress_Pitch_Shift_Up": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 13.0,
+        "max_risk_score": 15.0,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      },
+      "Distress_Pitch_Shift_Down": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 23.6,
+        "max_risk_score": 27.6,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      },
+      "Telephone_AMR_Codec": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 13.5,
+        "max_risk_score": 20.9,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      },
+      "G711_Compression": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 23.0,
+        "max_risk_score": 27.8,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      },
+      "Full_Grandma_Scenario": {
+        "false_positive_rate_pct": 0.0,
+        "mean_risk_score": 11.5,
+        "max_risk_score": 11.8,
+        "passed_safety_threshold": true,
+        "samples_tested": 3
+      }
+    },
+    "summary": "PASS: Genuine distressed human voice protected from false positive alarms"
+  },
+  "variable_clip_duration": {
+    "1.0s_clip": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "mean_latency_ms": 914.6,
+      "sample_count": 20
+    },
+    "2.0s_clip": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "mean_latency_ms": 882.9,
+      "sample_count": 20
+    },
+    "3.0s_clip": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "mean_latency_ms": 752.4,
+      "sample_count": 20
+    },
+    "4.0s_clip": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "mean_latency_ms": 738.1,
+      "sample_count": 20
+    }
+  },
+  "out_of_distribution_telephony": {
+    "Clean_Studio": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "total_tested": 20
+    },
+    "G711_Mulaw_8kHz": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "total_tested": 20
+    },
+    "AMR_Narrowband": {
+      "accuracy_pct": 100.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 0.0,
+      "total_tested": 20
+    },
+    "Noisy_Babble_10dB": {
+      "accuracy_pct": 15.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 100.0,
+      "total_tested": 20
+    },
+    "Full_Phone_Call_OOD": {
+      "accuracy_pct": 15.0,
+      "false_positive_rate_pct": 0.0,
+      "false_negative_rate_pct": 100.0,
+      "total_tested": 20
+    }
+  }
+}

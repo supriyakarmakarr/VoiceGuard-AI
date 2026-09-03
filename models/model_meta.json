@@ -1,6 +1,6 @@
 {
   "project": "SIH26104 - VoiceGuard AI",
-  "timestamp": "2026-09-01 19:40:30",
+  "timestamp": "2026-09-04 00:17:59",
   "dataset": {
     "num_real_samples": 40,
     "num_fake_samples": 40,
@@ -37,15 +37,58 @@
     "metrics": {
       "validation_accuracy": 1.0,
       "final_train_accuracy": 1.0,
-      "epochs_trained": 25,
+      "epochs_trained": 20,
       "architecture": "ResNet-SE Spectrogram 2D-CNN",
       "device": "cpu"
     },
-    "weights_file": "deep_cnn.pt"
+    "weights_file": "deep_cnn.pt",
+    "quantized_weights_file": "deep_cnn_quantized.pt"
   },
-  "risk_thresholds": {
-    "low_risk_max": 30.0,
-    "medium_risk_max": 70.0,
-    "high_risk_min": 70.0
+  "calibrator": {
+    "type": "Logistic Meta-Learner with Platt Scaling Sigmoid Calibration",
+    "metrics": {
+      "brier_score": 0.0045,
+      "calibrated_ece": 0.066,
+      "uncalibrated_ece": 0.0,
+      "ece_reduction_pct": 0.0,
+      "learned_weights": {
+        "deep_prob": 2.4651,
+        "baseline_prob": 2.4347,
+        "hf_anomaly": 0.3973,
+        "prosody_anomaly": 0.0615,
+        "spectral_cutoff": 0.195,
+        "spectral_flatness": -1.0645,
+        "audio_duration_sec": 0.0027
+      },
+      "intercept": -2.3438,
+      "calibration_method": "sigmoid",
+      "train_samples": 80
+    },
+    "weights_file": "risk_calibrator.pkl"
+  },
+  "speaker_verification": {
+    "enrolled_profiles": [
+      {
+        "speaker_id": "ceo_vikram",
+        "name": "Vikramaditya Singhania",
+        "role": "Chief Executive Officer (CEO)",
+        "department": "Executive Board",
+        "sample_duration_sec": 3.992
+      },
+      {
+        "speaker_id": "cfo_ananya",
+        "name": "Ananya Deshmukh",
+        "role": "Chief Financial Officer (CFO)",
+        "department": "Treasury & Funds",
+        "sample_duration_sec": 4.0
+      },
+      {
+        "speaker_id": "grandma_shanti",
+        "name": "Shanti Devi (Elderly Matriarch)",
+        "role": "Protected Family Member",
+        "department": "Family Emergency Vault",
+        "sample_duration_sec": 3.5
+      }
+    ]
   }
 }
