@@ -1,21 +1,31 @@
-/* VoiceGuard AI - Ultra-Premium Cyber Forensic Stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&display=swap');
+/* VoiceGuard AI - Signal Forensics Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  --bg-deep: #030712;
-  --bg-surface: rgba(11, 17, 33, 0.72);
-  --bg-surface-hover: rgba(19, 29, 56, 0.85);
-  --border-subtle: rgba(56, 189, 248, 0.12);
-  --border-glow: rgba(56, 189, 248, 0.38);
-  --cyan-neon: #06b6d4;
-  --cyan-glow: rgba(6, 182, 212, 0.5);
-  --purple-neon: #a855f7;
-  --purple-glow: rgba(168, 85, 247, 0.5);
-  --emerald-safe: #10b981;
-  --amber-warn: #f59e0b;
-  --crimson-threat: #ef4444;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  /* Base */
+  --bg-deep: #0B0C0A;
+  --bg-surface: #14130F;
+  --bg-surface-raised: #1A1812;
+  --border-hairline: rgba(232, 163, 61, 0.16);
+  --border-hairline-strong: rgba(232, 163, 61, 0.4);
+
+  /* Single accent: amber trace */
+  --amber: #E8A33D;
+  --amber-dim: rgba(232, 163, 61, 0.14);
+  --amber-bright: #F5B85C;
+
+  /* Risk tiers — muted, not neon */
+  --safe: #6FCF7B;
+  --safe-dim: rgba(111, 207, 123, 0.14);
+  --warn: #E8A33D;
+  --warn-dim: rgba(232, 163, 61, 0.14);
+  --threat: #E15554;
+  --threat-dim: rgba(225, 85, 84, 0.14);
+
+  /* Text */
+  --text-main: #F2EFE9;
+  --text-muted: #9C9789;
+  --text-faint: #6B675C;
 }
 
 * {
@@ -25,7 +35,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: var(--bg-deep);
   color: var(--text-main);
   min-height: 100vh;
@@ -33,85 +43,69 @@ body {
   position: relative;
 }
 
-/* Typography Classes */
-.font-syne {
-  font-family: 'Syne', sans-serif;
+/* Typography */
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .mono-font {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Mono', monospace;
 }
 
-/* Ambient Animated Glow Orbs */
-.glow-orb {
+/* ============================================
+   HERO SIGNAL TRACE — the one signature motion.
+   A single amber waveform line sweeps across on
+   load, then settles. Nothing else animates
+   without a user action.
+   ============================================ */
+.signal-trace {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 140px;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.25;
-  animation: orbFloat 20s infinite alternate ease-in-out;
+  opacity: 0.5;
 }
 
-.glow-orb-1 {
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, #06b6d4 0%, rgba(6, 182, 212, 0) 70%);
-  top: -100px;
-  left: -100px;
+.signal-trace path {
+  stroke: var(--amber);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: traceSweep 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.glow-orb-2 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, #a855f7 0%, rgba(168, 85, 247, 0) 70%);
-  top: 20%;
-  right: -150px;
-  animation-duration: 25s;
-}
-
-.glow-orb-3 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
-  bottom: 5%;
-  left: 20%;
-  animation-duration: 22s;
-}
-
-@keyframes orbFloat {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(40px, -30px) scale(1.08);
-  }
-  100% {
-    transform: translate(-30px, 40px) scale(0.95);
+@keyframes traceSweep {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
-/* Cyber Grid Background Overlay */
+/* Literal graph-paper grid, not a blurred orb field */
 .cyber-grid-overlay {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-image:
+    linear-gradient(to right, rgba(242, 239, 233, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 239, 233, 0.035) 1px, transparent 1px);
   position: relative;
   z-index: 1;
 }
 
-/* Luxury Glassmorphic Cards (Bento style) */
+/* ============================================
+   PANELS — sharp corners, hairline border,
+   no heavy glass-blur or drop shadow by default.
+   Reads as an instrument readout, not a SaaS card.
+   ============================================ */
 .glass-card {
   background: var(--bg-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.25rem;
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-hairline);
+  border-radius: 4px;
   position: relative;
-  overflow: hidden;
+  transition: border-color 0.25s ease;
 }
 
 .glass-card::before {
@@ -119,93 +113,118 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.4), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  width: 3px;
+  height: 100%;
+  background: transparent;
+  transition: background 0.25s ease;
 }
 
 .glass-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: 0 20px 45px -10px rgba(6, 182, 212, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  border-color: var(--border-hairline-strong);
 }
 
 .glass-card:hover::before {
-  opacity: 1;
+  background: var(--amber);
 }
 
-/* Glowing Button Styles */
-.btn-glow-cyan {
-  background: linear-gradient(135deg, #06b6d4, #2563eb);
-  color: #030712;
-  font-weight: 700;
-  box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+/* Panel header label — used sparingly, not on every card */
+.panel-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
 }
 
-.btn-glow-cyan:hover:not(:disabled) {
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
-  box-shadow: 0 0 35px rgba(6, 182, 212, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transform: scale(1.02);
+/* ============================================
+   BUTTONS — solid amber, no rainbow gradient.
+   Flat by default; the "glow" is reserved for
+   the analysis-complete moment only.
+   ============================================ */
+.btn-glow-cyan,
+.btn-primary {
+  background: var(--amber);
+  color: #14130F;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  border: none;
+  border-radius: 3px;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
-.btn-glow-purple {
-  background: linear-gradient(135deg, #9333ea, #6366f1);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 0 25px rgba(147, 51, 234, 0.35);
-  transition: all 0.3s ease;
+.btn-glow-cyan:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  background: var(--amber-bright);
+  transform: translateY(-1px);
 }
 
-.btn-glow-purple:hover:not(:disabled) {
-  background: linear-gradient(135deg, #a855f7, #818cf8);
-  box-shadow: 0 0 35px rgba(168, 85, 247, 0.6);
-  transform: scale(1.02);
+.btn-glow-purple,
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  border: 1px solid var(--border-hairline-strong);
+  border-radius: 3px;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-/* Dropzone styling */
+.btn-glow-purple:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--amber);
+  background: var(--amber-dim);
+}
+
+/* ============================================
+   DROPZONE — reads like a tape-deck input slot,
+   not a generic dashed upload box.
+   ============================================ */
 .drop-zone {
-  border: 2px dashed rgba(56, 189, 248, 0.28);
-  background: rgba(4, 9, 20, 0.5);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px dashed var(--border-hairline-strong);
+  background: var(--bg-surface);
+  border-radius: 4px;
+  transition: border-color 0.2s ease, background 0.2s ease;
   cursor: pointer;
 }
 
 .drop-zone:hover {
-  border-color: var(--cyan-neon);
-  background: rgba(6, 182, 212, 0.05);
+  border-color: var(--amber);
+  background: var(--amber-dim);
 }
 
 .drop-zone.dragover {
-  border-color: #22d3ee;
-  background: rgba(6, 182, 212, 0.12);
-  transform: scale(1.015);
-  box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);
+  border-color: var(--amber-bright);
+  border-style: solid;
+  background: var(--amber-dim);
 }
 
-/* Navigation Tabs */
+/* ============================================
+   TABS — underline indicator instead of a
+   filled glowing pill.
+   ============================================ */
 .tab-pill {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
 }
 
 .tab-pill.active {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(168, 85, 247, 0.22));
-  border: 1px solid rgba(6, 182, 212, 0.4);
-  color: #ffffff;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+  background: transparent;
+  border-bottom: 2px solid var(--amber);
+  color: var(--text-main);
+  box-shadow: none;
 }
 
-/* Gauge SVG Animation */
+/* Gauge */
 .gauge-svg {
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
 
 .gauge-bg {
-  stroke: rgba(255, 255, 255, 0.06);
+  stroke: rgba(242, 239, 233, 0.06);
 }
 
 .gauge-bar {
@@ -213,61 +232,63 @@ body {
   transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.6s ease;
 }
 
-/* Glowing Text */
-.glow-text-cyan {
-  text-shadow: 0 0 16px rgba(6, 182, 212, 0.6);
+/* Text emphasis — reserved for the risk verdict only,
+   not scattered across every heading */
+.glow-text-cyan,
+.glow-text-amber {
+  color: var(--amber-bright);
 }
 
 .glow-text-crimson {
-  text-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
+  color: var(--threat);
 }
 
 .glow-text-emerald {
-  text-shadow: 0 0 18px rgba(16, 185, 129, 0.7);
+  color: var(--safe);
 }
 
-/* Pulse Keyframes */
+/* Threat pulse — kept, but tighter and less neon */
 @keyframes pulseDanger {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+    box-shadow: 0 0 0 0 rgba(225, 85, 84, 0.35);
   }
   50% {
-    box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 10px rgba(225, 85, 84, 0);
   }
 }
 
 .pulse-danger {
-  animation: pulseDanger 2s infinite ease-in-out;
+  animation: pulseDanger 2.4s infinite ease-in-out;
 }
 
 @keyframes pulseSafe {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 0 rgba(111, 207, 123, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 10px rgba(111, 207, 123, 0);
   }
 }
 
 .pulse-safe {
-  animation: pulseSafe 2.2s infinite ease-in-out;
+  animation: pulseSafe 2.6s infinite ease-in-out;
 }
 
-/* Custom Cyber Scrollbars */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #030712;
+  background: var(--bg-deep);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #2A2820;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--cyan-neon);
+  background: var(--amber);
 }
