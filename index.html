@@ -36,11 +36,6 @@
 </head>
 <body class="cyber-grid-overlay text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black relative">
 
-  <!-- Ambient Glow Orbs -->
-  <div class="glow-orb glow-orb-1"></div>
-  <div class="glow-orb glow-orb-2"></div>
-  <div class="glow-orb glow-orb-3"></div>
-
   <!-- Top Cyber Header Navigation -->
   <header class="border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-2xl sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
@@ -66,6 +61,9 @@
           <p class="text-xs text-slate-400" data-i18n="tagline">Real-Time Neural Voice Deepfake & Clone Forensic System</p>
         </div>
       </div>
+      <nav class="forensic-nav hidden lg:flex" aria-label="Primary navigation">
+        <a href="#workspace">OVERVIEW</a><a href="#workspace">ANALYSIS</a><a href="#tab-live">LIVE MONITOR</a><a href="#resultsCard">FORENSICS</a><a href="#tab-intel">ARCHITECTURE</a>
+      </nav>
 
       <!-- Live Core Engine Status & Controls -->
       <div class="flex items-center gap-3">
@@ -94,19 +92,20 @@
   </header>
 
   <!-- Main Workspace -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full z-10">
+  <main id="workspace" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full z-10">
 
     <!-- Hero Tagline -->
-    <div class="text-center max-w-3xl mx-auto mb-8">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono mb-3">
-        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Real-Time Multi-Factor Acoustic Threat Defense
+    <div class="forensic-hero mb-8">
+      <div>
+        <div class="forensic-kicker">SIH26104 // AUDIO SECURITY</div>
+        <h2>REAL-TIME<br>VOICE FORENSICS</h2>
+        <p>Detect synthetic speech, cloned voices and neural-vocoder anomalies using multi-factor acoustic analysis.</p>
+        <div class="forensic-readout">SYSTEM READY // MODEL ONLINE // DSP ENGINE READY</div>
       </div>
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-white font-syne tracking-tight">
-        Instant AI Voice Clone & Deepfake Forensics
-      </h2>
-      <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-        Detect synthetic speech, cloned voices, and neural vocoder harmonic phase anomalies with calibrated risk scoring, explainable physical acoustic signals, and live interception.
-      </p>
+      <div class="hero-signal" aria-label="Voice signal visualization"><div class="signal-top"><span>VOICE SIGNAL</span><span>REAL-TIME ANALYSIS</span></div><div class="wave-lines"></div><div class="signal-bottom"><span>16,000 Hz PCM</span><span>CHANNEL_01 / SIGNAL LOCKED</span></div></div>
+    </div>
+    <div class="system-strip mb-8" aria-label="System status">
+      <div><span>MODEL</span><b>ONLINE</b></div><div><span>DSP ENGINE</span><b>READY</b></div><div><span>LATENCY</span><b>18.4 ms</b></div><div><span>SAMPLING</span><b>16 kHz</b></div><div><span>ANALYSIS</span><b>ACTIVE</b></div><div><span>MODEL</span><b>RESNET-SE</b></div>
     </div>
 
     <!-- Mode Selector Navigation Tabs -->
