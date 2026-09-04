@@ -875,7 +875,9 @@ async function processCurrentLiveChunk() {
   }
   const zcr = zeroCrossings / currentSamples.length;
   const isSuspicious = zcr > 0.16 || zcr < 0.02;
-  const streamRisk = isSuspicious ? Math.round(72 + Math.random() * 14) : Math.round(5 + Math.random() * 12);
+  // Deterministic client-side DSP fallback. Production risk scores always come
+  // from /api/analyze-chunk; this avoids presenting randomized values as evidence.
+  const streamRisk = Math.round(Math.max(3, Math.min(96, 8 + Math.abs(zcr - 0.075) * 700)));
   const streamLevel = streamRisk >= state.thresholdHigh ? "HIGH" : (streamRisk >= state.thresholdLow ? "MEDIUM" : "LOW");
   const streamColor = streamLevel === "HIGH" ? "#ef4444" : (streamLevel === "MEDIUM" ? "#f59e0b" : "#10b981");
 
@@ -954,8 +956,8 @@ function startVisualizer() {
       const barHeight = (dataArray[i] / 255) * canvas.height;
       const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
       gradient.addColorStop(0, '#06b6d4');
-      gradient.addColorStop(0.65, '#a855f7');
-      gradient.addColorStop(1, '#ef4444');
+      gradient.addColorStop(0.65, '#38bdf8');
+      gradient.addColorStop(1, '#b5eef6');
 
       ctx.fillStyle = gradient;
       ctx.fillRect(x, canvas.height - barHeight, barWidth - 2.5, barHeight);
