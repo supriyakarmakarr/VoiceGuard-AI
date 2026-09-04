@@ -11,8 +11,8 @@ import os
 import joblib
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.calibration import CalibratedClassifierCV, calibration_curve
-from sklearn.metrics import brier_score_loss, log_loss
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import brier_score_loss
 from typing import Dict, Tuple, Optional, List
 
 
@@ -93,7 +93,6 @@ class LearnedRiskCalibrator:
         # Base Logistic Meta-Learner
         base_lr = LogisticRegression(
             C=1.0,
-            penalty="l2",
             solver="lbfgs",
             max_iter=500,
             random_state=random_state,
