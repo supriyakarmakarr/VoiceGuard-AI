@@ -1,488 +1,420 @@
-/* ==========================================================================
-   VoiceGuard AI — Multi-Console Forensic Suite Stylesheet
-   Google Stitch Project: VoiceGuard Forensics Webpage (ID: 67276359575263821)
-   Screens:
-     1. Design System (asset-stub-assets_c5b24c7b636248598d301b53ed776f32)
-     2. VoiceGuard AI — Audio Forensics Console (3b339a34c9e140789523ade782d38aed)
-     3. VoiceGuard AI — Forensic History Console (9615459709db45149549de010b2fd146)
-     4. VoiceGuard AI — Live Streaming Forensics (729af6a5d58441aaa75371a6a22a0d6d)
-     5. VoiceGuard AI — Acoustic Forensics Workstation (80e6a271eab24cee8d8cfd80ac19e15d)
-   ========================================================================== */
+/* VoiceGuard AI - Ultra-Premium Cyber Forensic Command-Center Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-@import url('./tokens.css');
+:root {
+  --bg-deep: #080c10;
+  --bg-surface: #0d1419;
+  --bg-surface-hover: #111b21;
+  --border-subtle: #22343e;
+  --border-glow: #5cdbf0;
+  --cyan-neon: #5cdbf0;
+  --cyan-glow: rgba(92, 219, 240, 0.17);
+  --purple-neon: #a855f7;
+  --purple-glow: rgba(168, 85, 247, 0.25);
+  --emerald-safe: #10b981;
+  --amber-warn: #f59e0b;
+  --crimson-threat: #ef4444;
+  --text-main: #edf4f6;
+  --text-muted: #85949c;
+}
 
-/* Base Resets & Global Theme */
-*, *::before, *::after {
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  min-height: 100vh;
   overflow-x: hidden;
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  line-height: 1.5;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.8;
-  background:
-    radial-gradient(circle at 85% -10%, rgba(56, 189, 248, 0.08), transparent 30rem),
-    radial-gradient(circle at 10% 90%, rgba(168, 85, 247, 0.05), transparent 25rem),
-    linear-gradient(135deg, transparent 0%, rgba(6, 9, 14, 0.95) 100%);
+/* Typography Classes */
+.font-syne {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-.forensic-grid-overlay {
-  background-image:
-    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-  background-size: 4rem 4rem;
+.mono-font,
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
-.mono-font, .font-mono {
-  font-family: var(--font-mono) !important;
-  font-variant-numeric: tabular-nums;
+/* Cyber Grid Background Overlay */
+.cyber-grid-overlay {
+  background-image: 
+    linear-gradient(to right, rgba(126, 165, 178, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(126, 165, 178, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  position: relative;
 }
 
-.display-font, .font-display {
-  font-family: var(--font-display) !important;
-  letter-spacing: -0.02em;
+/* Top Header */
+header {
+  background: rgba(8, 12, 16, 0.92) !important;
+  border-color: var(--border-subtle) !important;
 }
 
-/* Header & Command Navigation */
-header.forensic-header {
-  background: rgba(6, 9, 14, 0.94);
-  backdrop-filter: blur(20px);
-  border-bottom: var(--rule) solid var(--color-rule);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-nav);
+.forensic-nav {
+  display: flex;
+  gap: 20px;
 }
 
-.screen-nav-tab {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--color-ink-muted);
-  padding: 0.5rem 0.85rem;
-  border-radius: var(--radius-sm);
-  border: var(--rule) solid transparent;
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
+.forensic-nav a {
+  font: 11px 'JetBrains Mono', monospace;
+  letter-spacing: 0.11em;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forensic-nav a:hover {
+  color: var(--cyan-neon);
+}
+
+/* Forensic Command Center Hero */
+.forensic-hero {
+  min-height: 320px;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
   align-items: center;
-  gap: 0.4rem;
-  transition: all var(--dur-short) var(--ease-out);
-  white-space: nowrap;
+  gap: 48px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 36px;
 }
 
-.screen-nav-tab:hover {
-  color: var(--color-ink);
-  background: var(--color-paper-3);
-  border-color: var(--color-rule);
+.forensic-kicker {
+  color: var(--cyan-neon);
+  font: 11px 'JetBrains Mono', monospace;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.screen-nav-tab.active {
-  color: var(--color-accent);
-  background: var(--color-accent-dim);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+.forensic-hero h2 {
+  font-size: clamp(36px, 4.5vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  margin: 12px 0 16px;
+  color: #edf4f6;
 }
 
-.screen-nav-tab .tab-badge {
-  font-size: 0.65rem;
-  padding: 0.1rem 0.35rem;
-  border-radius: var(--radius-xs);
-  background: var(--color-paper-elevated);
-  border: var(--rule) solid var(--color-rule);
+.forensic-hero p {
+  max-width: 480px;
+  color: #aab8be;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
-/* Forensic Cards & Surfaces */
-.forensic-card {
-  background: var(--color-paper-2);
-  border: var(--rule) solid var(--color-rule);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
+.forensic-readout {
+  color: #7f929b;
+  margin-top: 20px;
+  font: 11px 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+}
+
+/* Live Hero Signal Visualizer */
+.hero-signal {
+  min-height: 230px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  border: 1px solid #2a424d;
+  background: #0a1115;
+  border-radius: 12px;
+  padding: 16px;
 }
 
-.forensic-card:hover {
-  border-color: var(--color-rule-2);
-}
-
-.forensic-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: var(--rule) solid var(--color-rule);
-  padding-bottom: var(--space-sm);
-  margin-bottom: var(--space-md);
-}
-
-.forensic-card-title {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-ink-2);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Status & Threat Badges */
-.pill-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0.65rem;
-  border-radius: var(--radius-full);
-}
-
-.pill-safe {
-  background: var(--color-safe-bg);
-  color: var(--color-safe);
-  border: var(--rule) solid rgba(16, 185, 129, 0.3);
-}
-
-.pill-warn {
-  background: var(--color-warn-bg);
-  color: var(--color-warn);
-  border: var(--rule) solid rgba(245, 158, 11, 0.3);
-}
-
-.pill-danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
-  border: var(--rule) solid rgba(244, 63, 94, 0.35);
-  animation: pulseDanger 2.5s infinite;
-}
-
-.pill-accent {
-  background: var(--color-accent-dim);
-  color: var(--color-accent);
-  border: var(--rule) solid rgba(56, 189, 248, 0.3);
-}
-
-.pill-biometric {
-  background: var(--color-biometric-bg);
-  color: var(--color-biometric);
-  border: var(--rule) solid rgba(168, 85, 247, 0.3);
-}
-
-/* Action Buttons */
-.btn-forensic-primary {
-  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-  color: #06090e;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: var(--text-sm);
-  letter-spacing: 0.04em;
-  padding: 0.65rem 1.4rem;
-  border-radius: var(--radius-sm);
-  border: var(--rule) solid #38bdf8;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all var(--dur-short) var(--ease-out);
-  box-shadow: 0 2px 14px rgba(56, 189, 248, 0.25);
-}
-
-.btn-forensic-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
-}
-
-.btn-forensic-primary:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.btn-forensic-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-forensic-secondary {
-  background: var(--color-paper-3);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: var(--text-sm);
-  padding: 0.65rem 1.2rem;
-  border-radius: var(--radius-sm);
-  border: var(--rule) solid var(--color-rule);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all var(--dur-short) var(--ease-out);
-}
-
-.btn-forensic-secondary:hover:not(:disabled) {
-  background: var(--color-paper-elevated);
-  border-color: var(--color-rule-2);
-}
-
-.btn-forensic-danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
-  border: var(--rule) solid rgba(244, 63, 94, 0.4);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: var(--text-sm);
-  padding: 0.65rem 1.2rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all var(--dur-short) var(--ease-out);
-}
-
-.btn-forensic-danger:hover:not(:disabled) {
-  background: rgba(244, 63, 94, 0.25);
-}
-
-/* Upload Drop Zone */
-.drop-zone {
-  border: 2px dashed var(--color-rule-2);
-  border-radius: var(--radius-lg);
-  background: var(--color-paper);
-  padding: var(--space-xl) var(--space-lg);
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--dur-short) var(--ease-out);
-  position: relative;
-}
-
-.drop-zone:hover, .drop-zone.dragover {
-  border-color: var(--color-accent);
-  background: var(--color-accent-dim);
-}
-
-/* Form Controls */
-select.forensic-select, input.forensic-input {
-  background: var(--color-paper);
-  border: var(--rule) solid var(--color-rule);
-  color: var(--color-ink);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  padding: 0.5rem 0.85rem;
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: border-color var(--dur-short) var(--ease-out);
-}
-
-select.forensic-select:focus, input.forensic-input:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px var(--color-accent-dim);
-}
-
-/* Circular Risk Gauge */
-.risk-gauge-container {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 0 auto;
-}
-
-.risk-gauge-circle {
-  transition: stroke-dashoffset 800ms var(--ease-out), stroke 400ms var(--ease-out);
-}
-
-.risk-gauge-inner {
+.hero-signal::before,
+.hero-signal::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  width: 16px;
+  height: 16px;
+  border-color: var(--cyan-neon);
 }
 
-/* Dual Factor Decision Matrix Card */
-.dual-factor-badge {
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  border: var(--rule) solid;
+.hero-signal::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.hero-signal::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.signal-top,
+.signal-bottom {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  font-family: var(--font-mono);
-}
-
-.dual-factor-auth {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: var(--color-safe);
-}
-
-.dual-factor-blocked {
-  background: rgba(244, 63, 94, 0.12);
-  border-color: rgba(244, 63, 94, 0.4);
-  color: var(--color-danger);
-}
-
-.dual-factor-mismatch {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.4);
-  color: var(--color-warn);
-}
-
-/* Telephony Intercept Alarm Banner */
-.intercept-alarm-banner {
-  background: linear-gradient(90deg, rgba(244, 63, 94, 0.25) 0%, rgba(244, 63, 94, 0.1) 100%);
-  border: var(--rule-thick) solid var(--color-danger);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: var(--shadow-glow-danger);
-  animation: alarmFlash 1.5s ease-in-out infinite alternate;
-}
-
-/* Forensic History Table */
-.forensic-table-wrapper {
-  overflow-x: auto;
-  border: var(--rule) solid var(--color-rule);
-  border-radius: var(--radius-md);
-  background: var(--color-paper);
-}
-
-table.forensic-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  text-align: left;
-}
-
-table.forensic-table th {
-  background: var(--color-paper-3);
-  color: var(--color-ink-muted);
-  padding: 0.75rem 1rem;
-  border-bottom: var(--rule) solid var(--color-rule);
-  font-weight: 600;
-  text-transform: uppercase;
+  color: #7f929b;
+  font: 10px 'JetBrains Mono', monospace;
   letter-spacing: 0.08em;
-  white-space: nowrap;
 }
 
-table.forensic-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: var(--rule) solid rgba(255, 255, 255, 0.04);
-  color: var(--color-ink-2);
-  white-space: nowrap;
+.signal-top span:last-child {
+  color: var(--cyan-neon);
+  border: 1px solid #31525c;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-table.forensic-table tr:hover td {
-  background: rgba(56, 189, 248, 0.03);
+.wave-lines {
+  height: 140px;
+  margin: 14px 0;
+  overflow: hidden;
+  background: 
+    linear-gradient(transparent 49%, rgba(92, 219, 240, 0.16) 50%, transparent 51%),
+    repeating-linear-gradient(90deg, transparent 0 34px, rgba(92, 219, 240, 0.07) 35px 36px);
+  position: relative;
+  border-radius: 6px;
 }
 
-/* Canvases & Waveform Visualizers */
-canvas.forensic-canvas {
+.sine-wave {
   width: 100%;
-  border-radius: var(--radius-md);
-  background: #04070a;
-  border: var(--rule) solid var(--color-rule);
+  height: 100%;
+  overflow: hidden;
   display: block;
 }
 
-.spectrogram-ruler {
-  position: relative;
-  height: 220px;
+.sine-track {
+  animation: sineScroll 3.2s linear infinite;
+}
+
+.sine-glow {
+  fill: none;
+  stroke: rgba(92, 219, 240, 0.35);
+  stroke-width: 4;
+  filter: url(#waveGlow);
+}
+
+.sine-core {
+  fill: none;
+  stroke: #91eff9;
+  stroke-width: 1.4;
+}
+
+/* System Telemetry Strip */
+.system-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid var(--border-subtle);
+  background: #0b1115;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  background: #030508;
-  border: var(--rule) solid var(--color-rule);
 }
 
-.spectrogram-freq-axis {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 45px;
-  background: rgba(6, 9, 14, 0.85);
-  border-right: var(--rule) solid var(--color-rule);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 4px 4px 4px 6px;
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  color: var(--color-ink-muted);
-  pointer-events: none;
-  z-index: 2;
+.system-strip div {
+  padding: 12px 16px;
+  border-right: 1px solid var(--border-subtle);
 }
 
-/* Animations */
-@keyframes pulseDanger {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.35); }
-  50% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+.system-strip div:last-child {
+  border-right: none;
 }
 
-@keyframes alarmFlash {
-  0% { border-color: rgba(244, 63, 94, 0.4); }
-  100% { border-color: rgba(244, 63, 94, 1); box-shadow: 0 0 25px rgba(244, 63, 94, 0.4); }
+.system-strip span {
+  display: block;
+  color: #7f929b;
+  font: 9px 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-@keyframes sineScroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+.system-strip b {
+  display: block;
+  margin-top: 3px;
+  color: #b5eef6;
+  font: 11px 'JetBrains Mono', monospace;
+  font-weight: 700;
 }
 
-/* Scrollbar Customization */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-paper);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-rule-2);
-  border-radius: var(--radius-sm);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-dim);
+/* Glass Forensic Cards */
+.glass-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.25s ease;
 }
 
-/* Responsive Media Queries */
-@media (max-width: 1024px) {
-  .screen-nav-tab {
-    padding: 0.4rem 0.65rem;
-    font-size: 0.7rem;
+.glass-card:hover {
+  border-color: #38545f;
+}
+
+/* Drop Zone */
+.drop-zone {
+  border: 2px dashed #38545f;
+  background: #0a1014;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: var(--cyan-neon);
+  background: #0d1b20;
+}
+
+/* Cyber Buttons */
+.btn-glow-cyan {
+  background: var(--cyan-neon);
+  color: #061014;
+  font-weight: 700;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn-glow-cyan:hover:not(:disabled) {
+  background: #a5edf7;
+  transform: translateY(-1px);
+}
+
+.btn-glow-purple {
+  background: #172b33;
+  border: 1px solid #41606a;
+  color: #c4edf3;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-glow-purple:hover:not(:disabled) {
+  background: #1f3742;
+  border-color: var(--cyan-neon);
+}
+
+/* Navigation Tabs */
+.tab-pill {
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-pill:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tab-pill.active {
+  background: #14242a;
+  border-color: #41626c;
+  color: #c7f2f7;
+  font-weight: 600;
+}
+
+/* Risk Gauges & Pulse Effects */
+.gauge-bar {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+.pulse-danger {
+  animation: dangerPulse 2s infinite ease-in-out;
+}
+
+@keyframes dangerPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
   }
 }
 
-@media (max-width: 768px) {
-  header.forensic-header .nav-container {
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
+/* Spectrogram Render */
+#spectrogramImg {
+  image-rendering: auto;
+  border-radius: 8px;
+}
+
+/* Cyber Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060a0e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #192730;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-neon);
+}
+
+/* Keyframes */
+@keyframes sineScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-800px);
+  }
+}
+
+/* Responsive & Mobile Optimization */
+@media (max-width: 900px) {
+  .forensic-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    min-height: auto;
+  }
+  .forensic-nav {
+    display: none !important;
+  }
+  .system-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .system-strip div:nth-child(3) {
+    border-right: none;
+  }
+  .system-strip div:nth-child(-n+3) {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}
+
+@media (max-width: 640px) {
+  .system-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .system-strip div:nth-child(2n) {
+    border-right: none;
+  }
+  .system-strip div:nth-child(-n+4) {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}
+
+/* Accessibility: Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .sine-track {
+    animation: none;
+  }
+  .pulse-danger {
+    animation: none;
+  }
+  .btn-glow-cyan:hover:not(:disabled) {
+    transform: none;
   }
 }
