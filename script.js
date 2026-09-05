@@ -129,6 +129,11 @@ const translations = {
     recordStopPrompt: 'Tap the microphone again to finish.',
     recordCaptured: 'Recording captured',
     recordReady: 'Preview is ready. Analyze when you are set.',
+    recordAnalyzing: 'Analyzing live voice…',
+    recordAutoAnalyzing: 'Output generating in forensic readout ↗',
+    recordComplete: 'Analysis complete — see forensic readout on the right ↗',
+    statusLiveCapturing: 'CAPTURING LIVE VOICE…',
+    statusLiveAnalyzing: 'DETECTING VOCAL SIGNALS…',
     recordMicUnavailable: 'Microphone access was unavailable. You can still upload a file or use a sample.',
     analyzeVoiceBtn: 'Analyze Voice',
     readoutTitle: 'FORENSIC READOUT',
@@ -188,6 +193,11 @@ const translations = {
     recordStopPrompt: 'समाप्त करने के लिए माइक्रोफ़ोन पर पुनः टैप करें।',
     recordCaptured: 'रिकॉर्डिंग पूरी हुई',
     recordReady: 'पूर्वावलोकन तैयार है। विश्लेषण करें।',
+    recordAnalyzing: 'लाइव आवाज का विश्लेषण हो रहा है…',
+    recordAutoAnalyzing: 'पास के फोरेंसिक रीडआउट में आउटपुट तैयार हो रहा है ↗',
+    recordComplete: 'विश्लेषण पूरा — दाईं ओर रीडआउट देखें ↗',
+    statusLiveCapturing: 'लाइव आवाज कैप्चर हो रही है…',
+    statusLiveAnalyzing: 'स्वर संकेतों का पता लगाया जा रहा है…',
     recordMicUnavailable: 'माइक्रोफ़ोन अनुपलब्ध है। आप फ़ाइल अपलोड कर सकते हैं।',
     analyzeVoiceBtn: 'आवाज का विश्लेषण करें',
     readoutTitle: 'फोरेंसिक रीडआउट',
@@ -247,6 +257,11 @@ const translations = {
     recordStopPrompt: 'শেষ করতে আবার মাইক্রোফোনে আলতো চাপুন।',
     recordCaptured: 'রেকর্ডিং সম্পন্ন',
     recordReady: 'প্রিভিউ প্রস্তুত। বিশ্লেষণ শুরু করুন।',
+    recordAnalyzing: 'লাইভ ভয়েস বিশ্লেষণ করা হচ্ছে…',
+    recordAutoAnalyzing: 'পাশের ফরেনসিক রিডআউটে আউটপুট তৈরি হচ্ছে ↗',
+    recordComplete: 'বিশ্লেষণ সম্পন্ন — ডানদিকের রিডআউট দেখুন ↗',
+    statusLiveCapturing: 'লাইভ ভয়েস ক্যাপচার করা হচ্ছে…',
+    statusLiveAnalyzing: 'ভোকাল সংকেত সনাক্ত করা হচ্ছে…',
     recordMicUnavailable: 'মাইক্রোফোন উপলব্ধ নেই। আপনি ফাইল আপলোড করতে পারেন।',
     analyzeVoiceBtn: 'কণ্ঠস্বর বিশ্লেষণ করুন',
     readoutTitle: 'ফরেনসিক রিডআউট',
@@ -640,6 +655,11 @@ function renderResult(result) {
   const dict = translations[currentLang] || translations.en;
   readoutStatus.textContent = dict.statusReady;
   reportButton.disabled = false;
+
+  if (selectedAudio?.sample === 'recording') {
+    recordLabelText.textContent = dict.recordCaptured;
+    recordDetail.textContent = dict.recordComplete || 'Analysis complete — see forensic readout on the right ↗';
+  }
 }
 
 // Run Forensic Analysis
@@ -861,8 +881,8 @@ async function toggleRecording() {
       recordButton.setAttribute('aria-pressed', 'false');
 
       const dict = translations[currentLang] || translations.en;
-      recordLabelText.textContent = dict.recordCaptured;
-      recordDetail.textContent = dict.recordReady;
+      recordLabelText.textContent = dict.recordAnalyzing || 'Analyzing live voice…';
+      recordDetail.textContent = dict.recordAutoAnalyzing || 'Generating forensic readout on the right ↗';
 
       const durationSec = Math.max(1, (Date.now() - startedAt) / 1000);
       setAudio({
@@ -872,6 +892,11 @@ async function toggleRecording() {
         sample: 'recording',
         file: blob
       });
+
+      // Auto-analyze immediately for live voice without requiring separate Analyze button
+      setTimeout(() => {
+        runAnalysis();
+      }, 120);
     };
 
     recorder.start();
@@ -886,6 +911,7 @@ async function toggleRecording() {
     const dict = translations[currentLang] || translations.en;
     recordLabelText.textContent = dict.recordInProgress;
     recordDetail.textContent = dict.recordStopPrompt;
+    readoutStatus.textContent = dict.statusLiveCapturing || 'CAPTURING LIVE VOICE…';
 
     timerInterval = setInterval(() => {
       recordTimer.textContent = formatDuration((Date.now() - startedAt) / 1000);
@@ -933,7 +959,10 @@ function drawLiveWave() {
     ctx.lineWidth = 2;
     ctx.beginPath();
 
+    let energy = 0;
     for (let index = 0; index < data.length; index++) {
+      const v = (data[index] - 128) / 128;
+      energy += v * v;
       const x = (index / (data.length - 1)) * displayWidth;
       const y = (data[index] / 255) * displayHeight;
       if (index === 0) {
@@ -941,6 +970,11 @@ function drawLiveWave() {
       } else {
         ctx.lineTo(x, y);
       }
+    }
+    const rms = Math.sqrt(energy / data.length);
+    if (rms > 0.05 && recording) {
+      const dict = translations[currentLang] || translations.en;
+      readoutStatus.textContent = dict.statusLiveAnalyzing || 'DETECTING VOCAL SIGNALS…';
     }
 
     ctx.stroke();
