@@ -558,10 +558,6 @@ if os.path.exists(FRONTEND_DIR):
     def serve_styles():
         return FileResponse(os.path.join(FRONTEND_DIR, "styles.css"), media_type="text/css")
 
-    @app.get("/tokens.css")
-    def serve_tokens():
-        return FileResponse(os.path.join(FRONTEND_DIR, "tokens.css"), media_type="text/css")
-
     @app.get("/app.js")
     def serve_app_js():
         return FileResponse(os.path.join(FRONTEND_DIR, "app.js"), media_type="application/javascript")
