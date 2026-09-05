@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VoiceGuard AI — Multi-Console Forensic Suite (SIH26104)</title>
+  <title>VoiceGuard AI — Real-Time Neural Voice Deepfake & Clone Forensic Platform</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
   
-  <!-- Tailwind CSS CDN for Utility Classes -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -14,16 +14,16 @@
       theme: {
         extend: {
           colors: {
-            forensic: {
-              950: '#06090e',
-              900: '#0b1118',
-              800: '#111b24',
-              700: '#1e2c3a',
-              accent: '#38bdf8',
-              safe: '#10b981',
-              warn: '#f59e0b',
-              danger: '#f43f5e',
-              biometric: '#a855f7'
+            cyber: {
+              950: '#080c10',
+              900: '#0d1419',
+              800: '#111b21',
+              700: '#22343e',
+              neon: '#5cdbf0',
+              purple: '#a855f7',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              crimson: '#ef4444',
             }
           }
         }
@@ -31,832 +31,516 @@
     }
   </script>
 
-  <!-- Google Fonts & Custom Forensic Suite Stylesheet -->
+  <!-- Google Fonts & Cyber Stylesheet -->
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="forensic-grid-overlay text-slate-100 min-h-screen flex flex-col selection:bg-sky-400 selection:text-black relative">
+<body class="cyber-grid-overlay text-slate-100 min-h-screen flex flex-col selection:bg-cyan-400 selection:text-black relative">
 
-  <!-- ==========================================
-       COMMAND HEADER & SCREEN SWITCHER
-       ========================================== -->
-  <header class="forensic-header">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+  <!-- Top Cyber Header Navigation -->
+  <header class="border-b border-[#22343e] bg-[#080c10]/95 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
       
-      <!-- Brand & Project ID -->
+      <!-- Brand Logo & Title -->
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-sky-400 to-blue-600 p-0.5 flex items-center justify-center shadow-md shadow-sky-500/20">
-          <div class="w-full h-full bg-[#06090e] rounded-[7px] flex items-center justify-center">
-            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-blue-600 p-0.5 shadow-md shadow-cyan-500/20 flex items-center justify-center">
+          <div class="w-full h-full bg-[#080c10] rounded-[10px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>
           </div>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-wider text-white font-display">
-              VOICEGUARD <span class="text-sky-400">AI</span>
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-wider bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent font-syne" data-i18n="appTitle">
+              VOICEGUARD AI
             </h1>
-            <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300">
+            <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
               SIH26104
             </span>
           </div>
-          <p class="text-[10px] text-slate-400 hidden sm:block">Acoustic & Neural Voice Forensic Command Center</p>
+          <p class="text-[11px] text-slate-400 hidden sm:block" data-i18n="tagline">Real-Time Neural Voice Deepfake & Clone Forensic System</p>
         </div>
       </div>
 
-      <!-- 5-Screen Workstation Tab Navigation -->
-      <nav class="nav-container flex items-center gap-1 bg-[#0b1118] border border-[#1e2c3a] p-1 rounded-lg overflow-x-auto" aria-label="Workstation Consoles">
-        <button id="navTabAudio" class="screen-nav-tab active" data-screen="audio-console" title="Primary Audio Forensics Console">
-          <span>🎙️</span>
-          <span>AUDIO CONSOLE</span>
-          <span class="tab-badge">S2</span>
-        </button>
-        <button id="navTabLive" class="screen-nav-tab" data-screen="live-streaming" title="Real-Time Telephony Intercept Monitor">
-          <span>📡</span>
-          <span>LIVE STREAMING</span>
-          <span class="tab-badge text-emerald-400">REC</span>
-        </button>
-        <button id="navTabAcoustic" class="screen-nav-tab" data-screen="acoustic-lab" title="Acoustic Forensics Workstation & Spectrograms">
-          <span>🔬</span>
-          <span>ACOUSTIC LAB</span>
-          <span class="tab-badge">S5</span>
-        </button>
-        <button id="navTabHistory" class="screen-nav-tab" data-screen="audit-history" title="Investigation History & Case Files">
-          <span>📑</span>
-          <span>CASE HISTORY</span>
-          <span class="tab-badge" id="historyCounterBadge">0</span>
-        </button>
-        <button id="navTabDesign" class="screen-nav-tab" data-screen="design-system" title="Stitch Design System Specification">
-          <span>🎨</span>
-          <span>DESIGN SPEC</span>
-          <span class="tab-badge">S1</span>
-        </button>
+      <!-- Center Primary Navigation -->
+      <nav class="forensic-nav hidden lg:flex" aria-label="Primary navigation">
+        <a href="#workspace">OVERVIEW</a>
+        <a href="#tab-upload">SCAN</a>
+        <a href="#tab-samples">BENCHMARK</a>
+        <a href="#tab-live">LIVE MONITOR</a>
+        <a href="#tab-intel">ARCHITECTURE</a>
       </nav>
 
-      <!-- System Telemetry & Utilities -->
-      <div class="flex items-center gap-2">
-        <div id="systemStatusPill" class="px-2.5 py-1 bg-[#0b1118] border border-[#1e2c3a] text-slate-300 text-[11px] font-mono rounded-full flex items-center shadow-inner">
-          <span class="inline-block w-2 h-2 rounded-full bg-sky-400 mr-2 animate-pulse"></span>
-          <span id="systemStatusText">CONNECTING...</span>
+      <!-- Live Core Engine Status & Controls -->
+      <div class="flex items-center gap-2.5">
+        <div id="systemStatusPill" class="px-3 py-1 bg-slate-900 border border-slate-700 text-slate-400 text-xs font-mono rounded-full flex items-center shadow-inner">
+          <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 mr-2 animate-pulse"></span> CONNECTING...
         </div>
 
-        <div id="liveLatencyPill" class="hidden sm:flex px-2.5 py-1 bg-[#0b1118] border border-[#1e2c3a] text-slate-300 text-[11px] font-mono rounded-full items-center">
-          <span class="text-sky-400 font-bold mr-1">⚡</span>
-          <span id="headerLatencyVal">~20.9ms INT8</span>
+        <div id="liveLatencyPill" class="hidden sm:flex px-2.5 py-1 bg-slate-900 border border-slate-800 text-slate-400 text-xs font-mono rounded-full items-center">
+          <span class="text-cyan-400 font-bold mr-1">⚡</span> <span id="headerLatencyVal">~18ms</span>
         </div>
 
         <!-- Language Selector -->
-        <select id="languageSelector" aria-label="Interface Language" class="forensic-select text-xs py-1 px-2">
+        <select id="languageSelector" aria-label="Select Interface Language" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-2.5 py-1 focus:border-cyan-500 focus:outline-none transition">
           <option value="en">🇬🇧 English</option>
-          <option value="hi">🇮🇳 हिन्दी</option>
-          <option value="bn">🇮🇳 বাংলা</option>
+          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="bn">🇮🇳 বাংলা (Bengali)</option>
         </select>
 
-        <!-- Threshold Settings Modal Trigger -->
-        <button id="btnOpenThresholds" title="Configure Risk Thresholds" aria-label="Risk Thresholds" class="btn-forensic-secondary text-xs px-2.5 py-1">
-          ⚙️
+        <!-- Settings Modal Trigger -->
+        <button id="btnOpenThresholds" title="Configure Risk Thresholds" aria-label="Configure Risk Thresholds" class="p-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-cyan-500 text-slate-400 hover:text-cyan-400 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- ==========================================
-       MAIN WORKSTATION SCREEN CONTAINER
-       ========================================== -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+  <!-- Main Workspace -->
+  <main id="workspace" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full z-10">
 
-    <!-- ====================================================================
-         SCREEN 2: VOICEGUARD AI — AUDIO FORENSICS CONSOLE (PRIMARY)
-         ==================================================================== -->
-    <section id="screen-audio-console" class="screen-panel space-y-6">
-      
-      <!-- Telemetry Strip -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 bg-[#0b1118] border border-[#1e2c3a] rounded-xl p-3 font-mono text-[11px]">
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">Ensemble Architecture</span>
-          <b class="text-sky-300 font-bold">Deep CNN + RF + Calibrator</b>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">Holdout Evaluation</span>
-          <b class="text-slate-200">Cross-Generator Holdout</b>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">Calibration ECE</span>
-          <b class="text-emerald-400">0.0660 (Platt Logit)</b>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">CPU Inference Speed</span>
-          <b class="text-amber-300 font-bold">20.92 ms (1.63x Speedup)</b>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">Grandma False Positive</span>
-          <b class="text-emerald-400 font-bold">0.0% FPR (100% Pass)</b>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase">Biometric Hypersphere</span>
-          <b class="text-purple-300 font-bold">128-D Cosine Sim &ge; 0.78</b>
-        </div>
+    <!-- Hero Section: Data-First Forensic Command Center -->
+    <div class="forensic-hero mb-8">
+      <div>
+        <div class="forensic-kicker">SIH26104 // AUDIO DEFENSE SUITE</div>
+        <h2>REAL-TIME<br>VOICE FORENSICS</h2>
+        <p>Detect neural TTS, cloned executive voices, and vocoder phase anomalies using calibrated multi-factor acoustic analysis.</p>
+        <div class="forensic-readout">SYSTEM READY // DUAL-ENGINE ACTIVE // CARRIER WS ENABLED</div>
       </div>
 
-      <!-- Main Interaction Grid: Inputs & Analysis Configuration -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Left: Audio Ingestion Zone (7 Cols) -->
-        <div class="lg:col-span-7 space-y-4">
-          <div class="forensic-card space-y-4">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>📁</span> Audio Ingestion & Forensics Target
-              </span>
-              <span class="text-xs text-slate-400 font-mono" id="fileInfoText">No audio loaded</span>
-            </div>
+      <div class="hero-signal" aria-label="Animated voice signal visualization">
+        <div class="signal-top">
+          <span>SPECTRUM SIGNAL</span>
+          <span>REAL-TIME ANALYSIS</span>
+        </div>
+        <div class="wave-lines">
+          <svg class="sine-wave" viewBox="0 0 800 150" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <filter id="waveGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <g class="sine-track">
+              <path class="sine-glow" d="M0 75 C25 30 50 30 75 75 S125 120 150 75 S200 30 225 75 S275 120 300 75 S350 30 375 75 S425 120 450 75 S500 30 525 75 S575 120 600 75 S650 30 675 75 S725 120 750 75 S800 30 825 75 S875 120 900 75 S950 30 975 75 S1025 120 1050 75 S1100 30 1125 75 S1175 120 1200 75 S1250 30 1275 75 S1325 120 1350 75 S1400 30 1425 75 S1475 120 1500 75 S1550 30 1575 75 S1600 120 1625 75"/>
+              <path class="sine-core" d="M0 75 C25 30 50 30 75 75 S125 120 150 75 S200 30 225 75 S275 120 300 75 S350 30 375 75 S425 120 450 75 S500 30 525 75 S575 120 600 75 S650 30 675 75 S725 120 750 75 S800 30 825 75 S875 120 900 75 S950 30 975 75 S1025 120 1050 75 S1100 30 1125 75 S1175 120 1200 75 S1250 30 1275 75 S1325 120 1350 75 S1400 30 1425 75 S1475 120 1500 75 S1550 30 1575 75 S1600 120 1625 75"/>
+            </g>
+          </svg>
+        </div>
+        <div class="signal-bottom">
+          <span>16,000 Hz MONO PCM</span>
+          <span>CHANNEL_01 / CARRIER STREAM ACTIVE</span>
+        </div>
+      </div>
+    </div>
 
-            <!-- Drag & Drop Zone -->
-            <div id="dropZone" class="drop-zone space-y-2">
-              <input type="file" id="audioFileInput" accept="audio/*" class="hidden">
-              <div class="w-12 h-12 mx-auto rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+    <!-- Live System Telemetry Strip -->
+    <div class="system-strip mb-8" aria-label="System diagnostic telemetry">
+      <div><span>DEEP MODEL</span><b>RESNET-SE INT8</b></div>
+      <div><span>DSP ENSEMBLE</span><b>142 FEATURES</b></div>
+      <div><span>CPU LATENCY</span><b>~20.9 ms</b></div>
+      <div><span>CALIBRATION</span><b>PLATT SCALED</b></div>
+      <div><span>CARRIER WS</span><b>TWILIO / SIP</b></div>
+      <div><span>ACCURACY</span><b>98.8% F1</b></div>
+    </div>
+
+    <!-- Mode Selector Navigation Tabs -->
+    <div class="flex items-center justify-center mb-8">
+      <div class="bg-[#0d1419] p-1.5 rounded-xl border border-[#22343e] flex flex-wrap gap-2 shadow-lg">
+        <button class="tab-btn tab-pill active px-4 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2" data-tab="tab-upload">
+          <span>📁</span> <span data-i18n="tabUpload">File Upload</span>
+        </button>
+        <button class="tab-btn tab-pill px-4 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2" data-tab="tab-samples">
+          <span>🧪</span> <span data-i18n="tabSamples">1-Click Benchmark</span>
+        </button>
+        <button class="tab-btn tab-pill px-4 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2" data-tab="tab-live">
+          <span>🎙️</span> <span data-i18n="tabLive">Live Interception</span>
+        </button>
+        <button class="tab-btn tab-pill px-4 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2" data-tab="tab-intel">
+          <span>🧠</span> <span>AI Architecture</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: FILE UPLOAD FORENSICS -->
+    <section id="tab-upload" class="tab-content space-y-6">
+      <div class="glass-card p-6 md:p-8">
+        
+        <!-- Drag & Drop Zone -->
+        <div id="dropZone" role="button" tabindex="0" aria-label="Upload audio file for forensic scan" class="drop-zone p-8 sm:p-12 text-center cursor-pointer">
+          <input type="file" id="audioFileInput" class="hidden" accept=".wav,.mp3,.ogg,.flac,.m4a,audio/*">
+          
+          <div class="w-16 h-16 mx-auto mb-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+          </div>
+          
+          <h3 class="text-base sm:text-lg font-bold text-slate-100 mb-1 font-syne">
+            Click to browse or drag & drop audio file
+          </h3>
+          <p class="text-xs text-slate-400 mb-3 max-w-md mx-auto">
+            Supports WAV, MP3, FLAC, OGG, M4A. Automatically resampled and normalized to 16 kHz Mono.
+          </p>
+          <div class="flex items-center justify-center gap-2">
+            <span class="px-2.5 py-0.5 bg-[#080c10] border border-[#22343e] text-[11px] font-mono text-cyan-300 rounded-md">
+              16 kHz Standard
+            </span>
+            <span class="px-2.5 py-0.5 bg-[#080c10] border border-[#22343e] text-[11px] font-mono text-purple-300 rounded-md">
+              2.0s – 30.0s Recommended
+            </span>
+          </div>
+        </div>
+
+        <!-- Selected File Preview & Enterprise Attack Bar -->
+        <div id="filePreviewCard" class="hidden mt-6 p-5 rounded-xl bg-[#080c10] border border-cyan-500/30 flex flex-col gap-4 shadow-xl">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+              <div class="p-3 bg-cyan-500/10 rounded-lg text-cyan-400 border border-cyan-500/30">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"></path>
                 </svg>
               </div>
               <div>
-                <p class="text-sm font-semibold text-white">Drag & drop suspect audio file here</p>
-                <p class="text-xs text-slate-400 mt-0.5">Supports WAV, MP3, FLAC, OGG, M4A (16 kHz - 48 kHz)</p>
-              </div>
-              <button type="button" id="btnBrowseFile" class="btn-forensic-secondary text-xs mt-2">
-                Browse Local Files
-              </button>
-            </div>
-
-            <!-- Audio Player Bar (Hidden initially) -->
-            <div id="audioPlayerContainer" class="hidden bg-[#06090e] border border-[#1e2c3a] p-3 rounded-lg flex items-center gap-3">
-              <span class="text-lg">▶️</span>
-              <audio id="audioPlayer" controls class="w-full h-8 outline-none"></audio>
-            </div>
-
-            <!-- 1-Click Curated Benchmark Samples Selector -->
-            <div>
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-mono text-slate-300 font-semibold uppercase">
-                  1-Click Benchmark Datasets & Fraud Scenarios:
-                </label>
-                <span class="text-[10px] text-sky-400 font-mono">Research Benchmarks</span>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="curatedSamplesGrid">
-                <!-- Populated dynamically via app.js -->
+                <h4 id="selectedFileName" class="text-sm font-bold text-slate-100 truncate max-w-xs md:max-w-md">sample.wav</h4>
+                <p id="selectedFileSize" class="text-xs font-mono text-slate-400">0.00 MB • audio/wav</p>
               </div>
             </div>
 
+            <!-- HTML5 Source Audio Player -->
+            <audio id="sourceAudioPlayer" controls class="w-full md:w-72 h-10 bg-slate-900 rounded-lg"></audio>
           </div>
 
-          <!-- Simulation & Biometric Controls Card -->
-          <div class="forensic-card space-y-4">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>🛡️</span> Biometric Identity & Channel Simulation
-              </span>
-              <span class="pill-badge pill-biometric text-[10px]">Dual-Factor Verification</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Executive Claim Selector -->
-              <div>
-                <label class="block text-xs font-mono text-slate-300 mb-1.5 font-semibold">
-                  Executive Identity Claim (CEO Fraud Defense):
-                </label>
-                <select id="claimedSpeakerSelect" class="forensic-select w-full">
-                  <option value="">-- No Biometric Claim (Standard Scan) --</option>
-                  <option value="ceo_vikram">CEO Vikram Sharma (Enrolled Voiceprint)</option>
-                  <option value="cfo_ananya">CFO Ananya Roy (Enrolled Voiceprint)</option>
-                  <option value="grandma_shanti">Grandma Shanti (Emergency Contact)</option>
-                </select>
-                <p class="text-[10px] text-slate-400 mt-1 font-mono">Validates 128-D acoustic biometric hypersphere against claimed voice.</p>
-              </div>
-
-              <!-- Telephony Degradation Selector -->
-              <div>
-                <label class="block text-xs font-mono text-slate-300 mb-1.5 font-semibold">
-                  Channel & Codec Attack Degradation Simulator:
-                </label>
-                <select id="telephonyCodecSelect" class="forensic-select w-full">
-                  <option value="none">Clean Baseline Audio (Direct High-Fidelity)</option>
-                  <option value="g711_mulaw">G.711 μ-law (8kHz 8-bit Companding / PSTN)</option>
-                  <option value="amr_narrowband">AMR-NB (300-3400 Hz Cellular Bandpass)</option>
-                  <option value="babble_noise">Environmental Babble Noise (15 dB SNR)</option>
-                  <option value="full_scam_call">Full Adversarial Scam Scenario (Compression + Noise)</option>
-                </select>
-                <p class="text-[10px] text-slate-400 mt-1 font-mono">Tests robustness against carrier audio compression & line loss.</p>
-              </div>
-            </div>
-
-            <!-- Action Controls -->
-            <div class="flex items-center gap-3 pt-2">
-              <button id="btnRunScan" class="btn-forensic-primary flex-1 py-3 text-sm font-bold">
-                <span>⚡</span>
-                <span id="btnRunScanText">RUN COMPREHENSIVE FORENSIC SCAN</span>
-              </button>
-              <button id="btnResetScan" class="btn-forensic-secondary py-3 text-sm">
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Threat Verdict & Calibrated Risk Meter (5 Cols) -->
-        <div class="lg:col-span-5 space-y-4">
-          
-          <!-- Composite Risk Gauge Card -->
-          <div class="forensic-card text-center space-y-4">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>🎯</span> Composite Threat Risk Verdict
-              </span>
-              <span id="riskVerdictBadge" class="pill-badge pill-safe">AWAITING SCAN</span>
-            </div>
-
-            <!-- Circular Gauge -->
-            <div class="risk-gauge-container">
-              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <!-- Background track -->
-                <circle cx="50" cy="50" r="42" stroke="#111b24" stroke-width="10" fill="transparent" />
-                <!-- Dynamic gauge bar -->
-                <circle id="riskGaugeCircle" cx="50" cy="50" r="42" stroke="#10b981" stroke-width="10" stroke-linecap="round" fill="transparent"
-                  stroke-dasharray="263.89" stroke-dashoffset="263.89" class="risk-gauge-circle" />
-              </svg>
-              <div class="risk-gauge-inner">
-                <span id="riskScoreValue" class="text-4xl font-bold font-mono text-white tracking-tight">0%</span>
-                <span id="riskConfidenceText" class="text-[11px] font-mono text-slate-400 mt-1">Calibrated Risk</span>
-                <span id="riskEceBadge" class="text-[9px] font-mono text-emerald-400 mt-0.5">ECE Conf: 99.5%</span>
-              </div>
-            </div>
-
-            <!-- Threat Level Readout Bar -->
-            <div class="bg-[#06090e] border border-[#1e2c3a] p-3 rounded-lg text-xs font-mono space-y-1.5 text-left">
-              <div class="flex justify-between">
-                <span class="text-slate-400">Calibrated Synthetic Probability:</span>
-                <b id="syntheticProbValue" class="text-white">0.0%</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Model Consensus:</span>
-                <b id="modelConsensusValue" class="text-sky-300">Ready</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Calibration Pipeline:</span>
-                <b class="text-emerald-400">Logistic Sigmoid (Platt)</b>
-              </div>
-            </div>
-
-            <!-- Dual-Factor Executive Impersonation Verdict -->
-            <div id="dualFactorContainer" class="hidden">
-              <div id="dualFactorCard" class="dual-factor-badge dual-factor-auth text-left">
-                <div>
-                  <b id="dualFactorTitle" class="block text-xs font-bold">DUAL-FACTOR VERDICT</b>
-                  <p id="dualFactorSubtitle" class="text-[11px] opacity-85 mt-0.5">Awaiting biometric voiceprint evaluation...</p>
-                </div>
-                <span id="dualFactorIcon" class="text-2xl">🛡️</span>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Multi-Model Intelligence Breakdown -->
-          <div class="forensic-card space-y-3 text-xs font-mono">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>🧠</span> Multi-Model Intelligence Breakdown
-              </span>
-            </div>
-
-            <!-- Deep CNN -->
-            <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="font-bold text-slate-200">1. Deep Spectrogram CNN (ResNet-18)</span>
-                <span id="deepCnnScoreBadge" class="text-sky-400 font-bold">0.0%</span>
-              </div>
-              <div class="w-full bg-[#111b24] h-1.5 rounded-full overflow-hidden">
-                <div id="deepCnnProgressBar" class="bg-sky-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <div class="flex justify-between text-[10px] text-slate-400">
-                <span>FP32 / INT8 Quantized Core</span>
-                <span id="deepCnnLatency">Latency: ~20.9 ms</span>
-              </div>
-            </div>
-
-            <!-- Baseline RF -->
-            <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="font-bold text-slate-200">2. Acoustic Random Forest (Tabular MFCC)</span>
-                <span id="baselineRfScoreBadge" class="text-sky-400 font-bold">0.0%</span>
-              </div>
-              <div class="w-full bg-[#111b24] h-1.5 rounded-full overflow-hidden">
-                <div id="baselineRfProgressBar" class="bg-sky-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <div class="flex justify-between text-[10px] text-slate-400">
-                <span>38-D Handcrafted Signal Features</span>
-                <span>Latency: ~4.9 ms</span>
-              </div>
-            </div>
-
-            <!-- 5 Forensic Signal Indicators -->
-            <div class="pt-2 space-y-2">
-              <b class="text-slate-300 block text-[11px] uppercase tracking-wider">Acoustic Signal Anomaly Indicators:</b>
-              <div class="space-y-1.5" id="indicatorsList">
-                <!-- Dynamically populated via app.js -->
-              </div>
-            </div>
-
-            <!-- Export Evidence Certificate -->
-            <div class="pt-2">
-              <button id="btnExportJsonReport" class="btn-forensic-secondary w-full text-xs font-mono">
-                <span>📄</span> Export Forensic Case Dossier (JSON)
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ====================================================================
-         SCREEN 4: VOICEGUARD AI — LIVE STREAMING FORENSICS
-         ==================================================================== -->
-    <section id="screen-live-streaming" class="screen-panel hidden space-y-6">
-      
-      <!-- Intercept Alarm Banner (Triggered when live risk > 70%) -->
-      <div id="liveInterceptAlarm" class="hidden intercept-alarm-banner">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl animate-bounce">🚨</span>
-          <div>
-            <b class="text-sm font-bold text-white font-mono uppercase tracking-wider">CRITICAL FRAUD ALERT: AI SYNTHETIC VOICE INTERCEPTED</b>
-            <p class="text-xs text-rose-200 font-mono mt-0.5">Live carrier stream exceeds 70% threat threshold. Immediate wire-transfer / authentication freeze advised.</p>
-          </div>
-        </div>
-        <button id="btnDismissAlarm" class="btn-forensic-danger text-xs px-3 py-1 font-mono">
-          Acknowledge
-        </button>
-      </div>
-
-      <!-- Live Stream Dashboard Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Left 8 Cols: Real-Time Oscilloscope & Rolling Trajectory -->
-        <div class="lg:col-span-8 space-y-4">
-          
-          <!-- Oscilloscope Card -->
-          <div class="forensic-card space-y-3">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>📡</span> Live Audio Oscilloscope & Waveform Buffer
-              </span>
-              <div class="flex items-center gap-2">
-                <span id="liveStreamingStatusBadge" class="pill-badge pill-safe">STANDBY</span>
-                <span class="text-xs font-mono text-slate-400" id="liveBufferDuration">Buffer: 0.0s</span>
-              </div>
-            </div>
-
-            <!-- Canvas for Real-Time Oscilloscope -->
-            <div class="relative">
-              <canvas id="liveOscilloscopeCanvas" height="150" class="forensic-canvas"></canvas>
-              <div class="absolute top-2 right-2 flex items-center gap-2 text-[10px] font-mono bg-black/60 px-2 py-0.5 rounded text-sky-300">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>16,000 Hz PCM</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Rolling Threat Trajectory Card -->
-          <div class="forensic-card space-y-3">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>📈</span> Real-Time Rolling Threat Trajectory Timeline
-              </span>
-              <span class="text-xs font-mono text-slate-400">Sliding Window: 60 Chunks</span>
-            </div>
-
-            <!-- Canvas for Scrolling Threat Curve -->
-            <div class="relative">
-              <canvas id="liveTrajectoryCanvas" height="160" class="forensic-canvas"></canvas>
-              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-slate-400">
-                <span>Threshold Safe: &lt; 30%</span> | <span class="text-amber-400">Suspicious: 30-70%</span> | <span class="text-rose-400">Threat: &gt; 70%</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Right 4 Cols: Live Carrier Intercept Controls & Stream Telemetry -->
-        <div class="lg:col-span-4 space-y-4">
-          
-          <div class="forensic-card space-y-4">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>🎛️</span> Carrier Intercept Controls
-              </span>
-            </div>
-
-            <!-- Stream Source Switcher -->
+          <!-- Enterprise Advanced Attack & Identity Simulation Controls -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#22343e]">
+            <!-- 1. Biometric Speaker Verification (CEO Fraud Defense) -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-mono text-slate-300 font-semibold">Audio Stream Source:</label>
-              <select id="liveStreamSource" class="forensic-select w-full">
-                <option value="mic">Local Microphone Stream (Direct Hardware)</option>
-                <option value="carrier_ws">SIP / VoIP Carrier Hook (/api/telephony/ws)</option>
-                <option value="simulated_call">Simulated Incoming Bank Fraud Call</option>
+              <label for="claimedSpeakerSelect" class="text-[11px] font-mono text-cyan-300 uppercase flex items-center gap-1.5">
+                <span>🛡️</span> <span>Biometric Identity Verification (CEO Fraud Defense)</span>
+              </label>
+              <select id="claimedSpeakerSelect" class="w-full bg-[#0d1419] border border-[#22343e] hover:border-cyan-500/60 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 transition">
+                <option value="">None / General Synthetic Voice Scan</option>
+                <option value="ceo_vikram">Claimed: CEO Vikramaditya Singhania (Wire Transfer Auth)</option>
+                <option value="cfo_ananya">Claimed: CFO Ananya Deshmukh (Treasury Approval)</option>
+                <option value="grandma_shanti">Claimed: Grandmother Shanti Devi (Emergency Defense)</option>
               </select>
             </div>
 
-            <!-- Primary Toggle Button -->
-            <button id="btnToggleLiveStream" class="btn-forensic-primary w-full py-3 text-sm font-bold">
-              <span>▶️</span>
-              <span id="btnToggleLiveStreamText">START LIVE STREAM INTERCEPTION</span>
-            </button>
-
-            <!-- Stream Telemetry Metrics -->
-            <div class="bg-[#06090e] border border-[#1e2c3a] p-3 rounded-lg text-xs font-mono space-y-2">
-              <b class="text-sky-300 block text-[11px] uppercase tracking-wider">Live Telecom Metrics:</b>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Current Risk Spike:</span>
-                <b id="liveCurrentRisk" class="text-emerald-400">0.0%</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Peak Threat Recorded:</span>
-                <b id="livePeakRisk" class="text-slate-200">0.0%</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Chunk Latency:</span>
-                <b class="text-sky-400">~18.4 ms</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Packet Concealment (PLC):</span>
-                <b class="text-emerald-400">ACTIVE</b>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Total Chunks Processed:</span>
-                <b id="liveChunkCount" class="text-slate-200">0</b>
-              </div>
-            </div>
-
-            <!-- Fraud Intercept Log -->
+            <!-- 2. Telephony Codec & Attack Simulator -->
             <div class="space-y-1.5">
-              <span class="text-xs font-mono text-slate-300 font-semibold block">Live Event Feed:</span>
-              <div id="liveEventFeed" class="bg-[#04070a] border border-[#1e2c3a] p-2.5 rounded-lg h-36 overflow-y-auto font-mono text-[10px] space-y-1 text-slate-400">
-                <p class="text-slate-500">[STANDBY] Live stream listener initialized.</p>
-              </div>
+              <label for="simulateCodecSelect" class="text-[11px] font-mono text-purple-300 uppercase flex items-center gap-1.5">
+                <span>📞</span> <span>Attack / Telephony Degradation Simulator</span>
+              </label>
+              <select id="simulateCodecSelect" class="w-full bg-[#0d1419] border border-[#22343e] hover:border-purple-500/60 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-400 transition">
+                <option value="none">Clean Audio (Original Studio Quality)</option>
+                <option value="g711_mulaw">G.711 μ-law (8 kHz Telephony Standard)</option>
+                <option value="amr_nb">AMR-NB Narrowband (300-3400 Hz Telephone Filter)</option>
+                <option value="babble_noise">Noisy Line (12 dB SNR Babble Noise)</option>
+                <option value="full_phone_call">Full Scam Call Attack (AMR + G.711 + Noise + Jitter)</option>
+              </select>
             </div>
-
           </div>
 
+          <!-- Run Scan Action Bar -->
+          <div class="flex items-center justify-between pt-2">
+            <span class="text-[11px] text-slate-400 font-mono hidden sm:inline">
+              Multi-Factor Fusion • Platt Calibrated • Dynamic INT8 Quantized
+            </span>
+            <button id="btnAnalyze" disabled class="btn-glow-cyan w-full sm:w-auto px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              <span data-i18n="btnAnalyze">RUN FORENSIC SCAN</span>
+            </button>
+          </div>
         </div>
 
       </div>
-
     </section>
 
-    <!-- ====================================================================
-         SCREEN 5: VOICEGUARD AI — ACOUSTIC FORENSICS WORKSTATION
-         ==================================================================== -->
-    <section id="screen-acoustic-lab" class="screen-panel hidden space-y-6">
-      
-      <!-- Laboratory Subheader Controls -->
-      <div class="forensic-card flex flex-wrap items-center justify-between gap-4 p-4">
-        <div>
-          <h2 class="text-lg font-bold text-white font-display">Acoustic Signal & Spectrogram Forensic Laboratory</h2>
-          <p class="text-xs text-slate-400 font-mono">In-depth Fourier transform analysis, harmonic comb filter inspection, and vocal tract tractability.</p>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <!-- Colormap Switcher -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-mono text-slate-300">Colormap:</span>
-            <select id="spectrogramColormap" class="forensic-select text-xs py-1">
-              <option value="cyber">Cyber Cyan (Default)</option>
-              <option value="viridis">Viridis Spectral</option>
-              <option value="inferno">Inferno Thermal</option>
-              <option value="magma">Magma High-Contrast</option>
-            </select>
-          </div>
-
-          <!-- Re-analyze Button -->
-          <button id="btnRenderLabSpectrogram" class="btn-forensic-secondary text-xs px-3 py-1.5">
-            <span>🔄</span> Refresh FFT Analysis
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Laboratory Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Left 8 Cols: High-Res Mel-Spectrogram & Pitch Tracks -->
-        <div class="lg:col-span-8 space-y-4">
-          
-          <!-- High-Res Interactive Mel-Spectrogram -->
-          <div class="forensic-card space-y-3">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>🔬</span> High-Resolution Mel-Spectrogram (128 Mel Bins / 0 - 8000 Hz)
-              </span>
-              <span class="text-xs font-mono text-slate-400">FFT Window: 1024 | Hop: 512</span>
-            </div>
-
-            <!-- Spectrogram Container with Frequency Ruler -->
-            <div class="spectrogram-ruler">
-              <div class="spectrogram-freq-axis">
-                <span>8 kHz</span>
-                <span>6 kHz</span>
-                <span>4 kHz</span>
-                <span>2 kHz</span>
-                <span>0 Hz</span>
-              </div>
-              <canvas id="labSpectrogramCanvas" height="220" class="w-full h-full pl-[45px] block"></canvas>
-            </div>
-            <div class="flex justify-between text-[10px] font-mono text-slate-400 px-1">
-              <span>0.0s (Onset)</span>
-              <span>Time Axis &rarr;</span>
-              <span id="labAudioDurationText">Duration: 0.0s</span>
-            </div>
-          </div>
-
-          <!-- Fundamental Pitch (F0) & Prosodic Dynamic Contour -->
-          <div class="forensic-card space-y-3">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>〰️</span> Fundamental Frequency (F0) Pitch Contour & Micro-Tremor Track
-              </span>
-              <span id="f0MeanBadge" class="pill-badge pill-accent text-[10px]">F0 Mean: -- Hz</span>
-            </div>
-
-            <!-- Canvas for F0 Curve -->
-            <canvas id="labPitchCanvas" height="140" class="forensic-canvas"></canvas>
-            <div class="flex justify-between text-[10px] font-mono text-slate-400">
-              <span>Natural Human Pitch: Organic 3-6 Hz Micro-Tremor</span>
-              <span id="f0StdBadge">Pitch Std Dev: -- Hz</span>
-              <span>Synthetic Voice: Abnormally Flat / Robotized Pitch</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Right 4 Cols: Acoustic Distortion Metrics & Formant Trackers -->
-        <div class="lg:col-span-4 space-y-4">
-          
-          <!-- Acoustic Biometrics & Voice Quality Metrics -->
-          <div class="forensic-card space-y-3">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>📊</span> Acoustic Micro-Metrics
-              </span>
-            </div>
-
-            <div class="space-y-2.5 font-mono text-xs">
-              <!-- Jitter -->
-              <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg">
-                <div class="flex justify-between">
-                  <span class="text-slate-400">Vocal Jitter (Pitch Instability):</span>
-                  <b id="metricJitter" class="text-white">0.00%</b>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-1">Normal Human: 0.5% - 1.2%. Synthetic clones often show near 0% or erratic phase jumps.</p>
-              </div>
-
-              <!-- Shimmer -->
-              <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg">
-                <div class="flex justify-between">
-                  <span class="text-slate-400">Vocal Shimmer (Amp Perturbation):</span>
-                  <b id="metricShimmer" class="text-white">0.00 dB</b>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-1">Normal Human: 0.15 - 0.50 dB. Quantization in vocoders creates uncharacteristic shimmer.</p>
-              </div>
-
-              <!-- Spectral Rolloff -->
-              <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg">
-                <div class="flex justify-between">
-                  <span class="text-slate-400">Spectral Rolloff (85% Energy):</span>
-                  <b id="metricRolloff" class="text-white">0 Hz</b>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-1">Detects artificial low-pass filters common in neural vocoder upsampling.</p>
-              </div>
-
-              <!-- Neural Vocoder Comb Fingerprint -->
-              <div class="bg-[#06090e] border border-[#1e2c3a] p-2.5 rounded-lg">
-                <div class="flex justify-between">
-                  <span class="text-slate-400">Vocoder Harmonic Ratio:</span>
-                  <b id="metricVocoderRatio" class="text-white">0.00</b>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-1">Comb-filter signature left by HiFi-GAN, WaveGlow, and MelGAN vocoders.</p>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Formant Dispersion Analysis -->
-          <div class="forensic-card space-y-3 font-mono text-xs">
-            <div class="forensic-card-header">
-              <span class="forensic-card-title">
-                <span>📐</span> Vocal Tract Formants (F1 - F4)
-              </span>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex justify-between p-1.5 bg-[#06090e] rounded border border-[#1e2c3a]">
-                <span class="text-slate-400">F1 (Pharyngeal Resonance):</span>
-                <b id="formantF1" class="text-sky-300">-- Hz</b>
-              </div>
-              <div class="flex justify-between p-1.5 bg-[#06090e] rounded border border-[#1e2c3a]">
-                <span class="text-slate-400">F2 (Oral Cavity Resonance):</span>
-                <b id="formantF2" class="text-sky-300">-- Hz</b>
-              </div>
-              <div class="flex justify-between p-1.5 bg-[#06090e] rounded border border-[#1e2c3a]">
-                <span class="text-slate-400">F3 (Tongue Blade / Dental):</span>
-                <b id="formantF3" class="text-sky-300">-- Hz</b>
-              </div>
-              <div class="flex justify-between p-1.5 bg-[#06090e] rounded border border-[#1e2c3a]">
-                <span class="text-slate-400">F4 (Laryngeal Articulation):</span>
-                <b id="formantF4" class="text-sky-300">-- Hz</b>
-              </div>
-            </div>
-            <p class="text-[10px] text-slate-500 font-mono">Formant dispersion spacing follows human vocal tract acoustics (17.5 cm avg tract length).</p>
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ====================================================================
-         SCREEN 3: VOICEGUARD AI — FORENSIC HISTORY CONSOLE
-         ==================================================================== -->
-    <section id="screen-audit-history" class="screen-panel hidden space-y-6">
-      
-      <!-- Summary KPI Row -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
-        <div class="forensic-card p-4">
-          <span class="text-xs text-slate-400 block uppercase">Total Scans Executed</span>
-          <b id="historyTotalScans" class="text-2xl font-bold text-white block mt-1">0</b>
-          <span class="text-[10px] text-sky-400">Case audit log</span>
-        </div>
-        <div class="forensic-card p-4">
-          <span class="text-xs text-slate-400 block uppercase">AI Clones Intercepted</span>
-          <b id="historyDeepfakesBlocked" class="text-2xl font-bold text-rose-400 block mt-1">0</b>
-          <span class="text-[10px] text-rose-400">Threats quarantined</span>
-        </div>
-        <div class="forensic-card p-4">
-          <span class="text-xs text-slate-400 block uppercase">CEO Frauds Thwarted</span>
-          <b id="historyCeoBlocked" class="text-2xl font-bold text-purple-400 block mt-1">0</b>
-          <span class="text-[10px] text-purple-400">Biometric mismatches</span>
-        </div>
-        <div class="forensic-card p-4">
-          <span class="text-xs text-slate-400 block uppercase">Grandma False Positives</span>
-          <b class="text-2xl font-bold text-emerald-400 block mt-1">0.0%</b>
-          <span class="text-[10px] text-emerald-400">100% Genuine Protection</span>
-        </div>
-      </div>
-
-      <!-- Case Log Filter & Search Bar -->
-      <div class="forensic-card flex flex-wrap items-center justify-between gap-3 p-4">
-        <div class="flex items-center gap-2 flex-1 min-w-[240px]">
-          <span>🔍</span>
-          <input type="text" id="historySearchInput" placeholder="Search case by ID, file name, or caller..." class="forensic-input w-full">
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-mono text-slate-300">Filter Risk:</span>
-          <select id="historyFilterRisk" class="forensic-select text-xs py-1">
-            <option value="ALL">All Risk Levels</option>
-            <option value="HIGH">High Risk (Synthetic)</option>
-            <option value="SUSPICIOUS">Suspicious (30-70%)</option>
-            <option value="LOW">Low Risk (Genuine)</option>
-          </select>
-
-          <!-- Export History Actions -->
-          <button id="btnExportHistoryJson" class="btn-forensic-secondary text-xs px-3 py-1">
-            Export JSON
-          </button>
-          <button id="btnExportHistoryCsv" class="btn-forensic-secondary text-xs px-3 py-1">
-            Export CSV
-          </button>
-          <button id="btnClearHistory" class="btn-forensic-danger text-xs px-3 py-1">
-            Clear
-          </button>
-        </div>
-      </div>
-
-      <!-- Case File Table -->
-      <div class="forensic-table-wrapper">
-        <table class="forensic-table">
-          <thead>
-            <tr>
-              <th>Case ID</th>
-              <th>Timestamp</th>
-              <th>Subject / Audio File</th>
-              <th>Biometric Claim</th>
-              <th>Codec / Degradation</th>
-              <th>Calibrated Risk</th>
-              <th>Verdict Badge</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <!-- Populated dynamically via app.js -->
-            <tr>
-              <td colspan="8" class="text-center py-8 text-slate-500 font-mono">
-                No forensic cases recorded yet. Run a scan in the Audio Forensics Console to generate case files.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </section>
-
-    <!-- ====================================================================
-         SCREEN 1: DESIGN SYSTEM & COMPONENT SPECIFICATION
-         ==================================================================== -->
-    <section id="screen-design-system" class="screen-panel hidden space-y-6">
-      
-      <div class="forensic-card space-y-4">
-        <div class="forensic-card-header">
+    <!-- TAB 2: 1-CLICK BENCHMARK SAMPLES -->
+    <section id="tab-samples" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 md:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#22343e]">
           <div>
-            <h2 class="text-lg font-bold text-white font-display">VoiceGuard Design System Specification</h2>
-            <p class="text-xs text-slate-400 font-mono">Google Stitch Project: VoiceGuard Forensics Webpage (ID: 67276359575263821)</p>
+            <h3 class="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2 font-syne">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Curated Audio Benchmark Suite
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Pre-calibrated test suite to evaluate authentic executive voices vs advanced voice-clone attacks.</p>
           </div>
-          <span class="pill-badge pill-accent">Design Tokens v2.0</span>
+          <span class="text-xs font-mono text-cyan-300 px-3 py-1 bg-cyan-950/60 border border-cyan-500/30 rounded-md self-start sm:self-auto">
+            5 Scenarios
+          </span>
         </div>
 
-        <!-- Color Palette Swatches -->
-        <div class="space-y-2">
-          <b class="text-xs font-mono text-slate-300 block uppercase tracking-wider">Foundational Color Tokens:</b>
-          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 font-mono text-xs">
-            
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#06090e]">
-              <div class="h-8 rounded bg-[#06090e] border border-slate-700 mb-2"></div>
-              <b class="text-slate-200">Paper Base</b>
-              <span class="text-[10px] text-slate-500 block">#06090e</span>
+        <div id="samplesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="p-8 text-center col-span-full text-slate-500 text-sm">Loading curated benchmark samples...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LIVE INTERCEPTION MONITORING -->
+    <section id="tab-live" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 md:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#22343e]">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2 font-syne">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-400 animate-ping"></span> Live Speech Interception & Sliding-Window Stream
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Continuous 2.8s sliding chunks evaluated with instant fraud alert triggers.</p>
+          </div>
+          <span class="text-xs font-mono text-slate-400 px-3 py-1 bg-[#080c10] border border-[#22343e] rounded-md self-start sm:self-auto">
+            WebSocket / Web Audio DSP
+          </span>
+        </div>
+
+        <div class="text-center py-4">
+          <button id="btnToggleLive" class="btn-glow-cyan w-full max-w-sm mx-auto py-3.5 px-6 rounded-xl font-bold flex items-center justify-center gap-2">
+            <svg class="w-5 h-5 text-cyan-900" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path>
+            </svg>
+            <span data-i18n="btnStartLive">START LIVE INTERCEPTION</span>
+          </button>
+          <p id="liveStatusText" class="text-xs text-slate-400 font-mono mt-3" data-i18n="liveStatusIdle">
+            Ready to monitor. Click 'Start Live Interception' to analyze incoming speech stream.
+          </p>
+        </div>
+
+        <!-- Live Visualizer & Stream Telemetry -->
+        <div id="liveVisualizerContainer" class="hidden mt-6 space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- FFT Audio Spectrum Canvas -->
+            <div class="p-4 rounded-xl bg-[#080c10] border border-[#22343e]">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-mono text-cyan-300 uppercase">Microphone Spectrum (16 kHz PCM)</span>
+                <span class="text-[10px] font-mono text-slate-500">64 Frequency Bins</span>
+              </div>
+              <canvas id="liveAudioCanvas" width="480" height="140" class="w-full h-36 rounded bg-black/40"></canvas>
             </div>
 
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#0b1118]">
-              <div class="h-8 rounded bg-[#0b1118] border border-slate-700 mb-2"></div>
-              <b class="text-slate-200">Paper-2 Card</b>
-              <span class="text-[10px] text-slate-500 block">#0b1118</span>
+            <!-- Risk Trajectory Chart -->
+            <div class="p-4 rounded-xl bg-[#080c10] border border-[#22343e]">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-mono text-cyan-300 uppercase">Real-Time Threat Trajectory</span>
+                <div class="flex items-center gap-2">
+                  <span id="streamCurrentRiskBadge" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">LOW RISK</span>
+                  <span id="streamCurrentRiskScore" class="text-xs font-bold font-mono text-slate-200">0%</span>
+                </div>
+              </div>
+              <canvas id="streamRiskCanvas" width="480" height="140" class="w-full h-36 rounded bg-black/40"></canvas>
+            </div>
+          </div>
+
+          <!-- Live Alert Banner -->
+          <div id="streamLiveAlert" class="hidden p-3.5 rounded-xl border border-red-500/50 bg-red-950/60 shadow-lg text-center"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: AI ARCHITECTURE -->
+    <section id="tab-intel" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 md:p-8">
+        <h3 class="text-base sm:text-lg font-bold text-slate-100 mb-2 font-syne flex items-center gap-2">
+          <span>🧠</span> Multi-Factor Deepfake Detection & Dual-Factor Biometric Architecture
+        </h3>
+        <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+          VoiceGuard AI combines high-resolution 2D Mel-Spectrogram attention networks with physical acoustic signal forensic metrics and biometric voiceprint cosine similarity to detect deepfakes, voice clones, and impersonation attacks.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="p-5 rounded-xl bg-[#080c10] border border-[#22343e]">
+            <span class="text-xl mb-2 block">🔬</span>
+            <h4 class="text-sm font-bold text-slate-200 mb-1 font-syne">PyTorch ResNet-SE CNN</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              2D Mel-Spectrogram input with channel-wise Squeeze-and-Excitation attention and dynamic INT8 CPU quantization for sub-21ms steady-state inference.
+            </p>
+          </div>
+          <div class="p-5 rounded-xl bg-[#080c10] border border-[#22343e]">
+            <span class="text-xl mb-2 block">📊</span>
+            <h4 class="text-sm font-bold text-slate-200 mb-1 font-syne">142-Feature Baseline ML</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Random Forest + Gradient Boosting soft-voting ensemble across MFCCs, delta dynamics, vocoder high-frequency energy ratio, and pitch jitter.
+            </p>
+          </div>
+          <div class="p-5 rounded-xl bg-[#080c10] border border-[#22343e]">
+            <span class="text-xl mb-2 block">🛡️</span>
+            <h4 class="text-sm font-bold text-slate-200 mb-1 font-syne">Biometric Voiceprint Match</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              128-dimensional acoustic embeddings normalized on unit hypersphere. Dual-factor matrix protects against wire transfer fraud and CEO impersonation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORENSIC SCAN RESULTS CONTAINER -->
+    <section id="resultsCard" class="hidden mt-8 space-y-6">
+
+      <!-- Actionable Threat Advisory Banner -->
+      <div id="advisoryBanner" class="p-5 rounded-xl border shadow-xl"></div>
+
+      <!-- Dual-Factor Speaker Verification Result Card (CEO-Fraud Defense) -->
+      <div id="speakerVerificationCard" class="hidden p-5 rounded-xl border shadow-xl transition-all">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div id="speakerDecisionIcon" class="w-11 h-11 rounded-xl flex items-center justify-center text-xl font-bold bg-[#080c10] border border-[#22343e]">
+              🛡️
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 id="speakerDecisionTitle" class="text-sm font-bold font-syne text-white">DUAL-FACTOR IDENTITY DECISION</h4>
+                <span id="speakerDecisionBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">AUTHORIZED</span>
+              </div>
+              <p id="speakerDecisionReason" class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Biometric acoustic voiceprint matched against enrolled executive profile.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 self-stretch sm:self-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-[#22343e]">
+            <div class="text-left sm:text-right">
+              <span class="text-[10px] text-slate-400 font-mono block uppercase">Voiceprint Match</span>
+              <span id="speakerSimilarityVal" class="text-sm sm:text-base font-bold font-mono text-cyan-300">0.0%</span>
+            </div>
+            <div class="text-left sm:text-right">
+              <span class="text-[10px] text-slate-400 font-mono block uppercase">Calibration Mode</span>
+              <span id="calibModeBadge" class="text-xs font-bold font-mono text-purple-300">Platt Scaled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Grid Top Row: Main Gauge + Indicators Matrix -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Circular Composite Threat Gauge -->
+        <div class="glass-card p-6 flex flex-col items-center justify-center text-center">
+          <span class="text-[11px] font-mono text-cyan-300 uppercase tracking-wider mb-2" data-i18n="riskScoreTitle">
+            COMPOSITE THREAT RISK
+          </span>
+          
+          <div class="relative w-44 h-44 my-2 flex items-center justify-center">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 160 160" aria-hidden="true">
+              <circle cx="80" cy="80" r="66" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="transparent"/>
+              <circle id="compositeGauge" class="gauge-bar" cx="80" cy="80" r="66" stroke="#10b981" stroke-width="12" stroke-dasharray="414.69" stroke-dashoffset="414.69" fill="transparent"/>
+            </svg>
+            <div class="absolute flex flex-col items-center">
+              <span id="gaugeRiskScore" class="text-4xl font-extrabold font-mono text-slate-100">0%</span>
+              <span id="gaugeRiskLevel" class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">SAFE</span>
+            </div>
+          </div>
+
+          <p id="gaugeVerdictSummary" class="text-xs text-slate-300 mt-2 max-w-xs font-medium">Likely Genuine Human Voice</p>
+        </div>
+
+        <!-- Key Indicators & Probability Matrix -->
+        <div class="glass-card p-6 lg:col-span-2 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold font-syne text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                <span>🔬</span> Detection Confidence & Multi-Signal Fusion
+              </h3>
+              <span id="inferenceLatencyBadge" class="text-xs font-mono text-cyan-300 px-2.5 py-1 bg-[#080c10] border border-[#22343e] rounded-md">
+                ⚡ ~20.9ms CPU
+              </span>
             </div>
 
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#111b24]">
-              <div class="h-8 rounded bg-[#111b24] border border-slate-700 mb-2"></div>
-              <b class="text-slate-200">Paper-3 Layer</b>
-              <span class="text-[10px] text-slate-500 block">#111b24</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div class="p-3.5 rounded-xl bg-[#080c10] border border-[#22343e]">
+                <span class="text-[10px] text-slate-400 font-mono block uppercase mb-1" data-i18n="syntheticProb">Estimated Synthetic Prob:</span>
+                <span id="metricSynthProb" class="text-xl font-bold font-mono text-cyan-300">0.0%</span>
+              </div>
+              <div class="p-3.5 rounded-xl bg-[#080c10] border border-[#22343e]">
+                <span class="text-[10px] text-slate-400 font-mono block uppercase mb-1" data-i18n="confidenceLabel">Forensic Confidence:</span>
+                <span id="metricConfidence" class="text-xl font-bold font-mono text-emerald-300">0.0%</span>
+              </div>
+              <div class="p-3.5 rounded-xl bg-[#080c10] border border-[#22343e]">
+                <span class="text-[10px] text-slate-400 font-mono block uppercase mb-1">Model Agreement:</span>
+                <span id="metricAgreement" class="text-xl font-bold font-mono text-purple-300">100%</span>
+              </div>
             </div>
+          </div>
 
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#0b1118]">
-              <div class="h-8 rounded bg-[#38bdf8] mb-2 shadow-sm shadow-sky-400"></div>
-              <b class="text-sky-400">Cyber Cyan</b>
-              <span class="text-[10px] text-slate-500 block">#38bdf8</span>
+          <!-- Explainable Signals Progress -->
+          <div>
+            <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3" data-i18n="indicatorsTitle">
+              FORENSIC SIGNALS & ACOUSTIC INDICATORS
+            </h4>
+            <div id="indicatorsList" class="space-y-3">
+              <!-- Dynamically populated -->
             </div>
-
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#0b1118]">
-              <div class="h-8 rounded bg-[#10b981] mb-2 shadow-sm shadow-emerald-400"></div>
-              <b class="text-emerald-400">Safe Emerald</b>
-              <span class="text-[10px] text-slate-500 block">#10b981</span>
-            </div>
-
-            <div class="p-3 rounded-lg border border-[#1e2c3a] bg-[#0b1118]">
-              <div class="h-8 rounded bg-[#f43f5e] mb-2 shadow-sm shadow-rose-400"></div>
-              <b class="text-rose-400">Threat Crimson</b>
-              <span class="text-[10px] text-slate-500 block">#f43f5e</span>
-            </div>
-
           </div>
         </div>
 
-        <!-- Typography Hierarchy -->
-        <div class="space-y-2 pt-3">
-          <b class="text-xs font-mono text-slate-300 block uppercase tracking-wider">Typography Hierarchy:</b>
-          <div class="bg-[#06090e] border border-[#1e2c3a] p-4 rounded-lg space-y-3">
-            <div>
-              <span class="text-[10px] font-mono text-slate-500 block">Display Serif (Cormorant Garamond 600)</span>
-              <p class="font-display text-2xl text-white">Authentic Forensic Integrity & Defense</p>
+      </div>
+
+      <!-- Bento Grid Bottom Row: Acoustic Metrics & Spectrogram Heatmap -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Acoustic DSP Signal Metrics -->
+        <div class="glass-card p-6">
+          <h3 class="text-sm font-bold font-syne text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span>📊</span> Acoustic Physical DSP Forensics
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Fundamental Pitch (F0)</span>
+              <span id="metricF0Mean" class="text-base font-bold font-mono text-slate-100">0.0 Hz</span>
             </div>
-            <div>
-              <span class="text-[10px] font-mono text-slate-500 block">Body Sans (Manrope 500)</span>
-              <p class="font-sans text-sm text-slate-200">Multi-feature logistic calibration guarantees sub-0.07 ECE confidence under telephony conditions.</p>
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Pitch Std Dev / Jitter</span>
+              <span id="metricF0Std" class="text-base font-bold font-mono text-slate-100">0.0 Hz</span>
             </div>
-            <div>
-              <span class="text-[10px] font-mono text-slate-500 block">Telemetry Monospace (JetBrains Mono 600)</span>
-              <p class="font-mono text-xs text-sky-400">SAMPLE_RATE: 16000 Hz | CHOP_SIZE: 2048 | INT8_SPEEDUP: 1.63x</p>
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Vocoder HF Ratio (>4k)</span>
+              <span id="metricVocoderRatio" class="text-base font-bold font-mono text-slate-100">0.000</span>
             </div>
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Voiced Frame Ratio</span>
+              <span id="metricVoicedRatio" class="text-base font-bold font-mono text-slate-100">0.0%</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Zero Crossing Rate</span>
+              <span id="metricZcr" class="text-base font-bold font-mono text-slate-100">0.000</span>
+            </div>
+            <div class="p-3 rounded-lg bg-[#080c10] border border-[#22343e]">
+              <span class="text-[10px] text-slate-400 font-mono block">Analyzed Duration</span>
+              <span id="metricDuration" class="text-base font-bold font-mono text-slate-100">0.0s</span>
+            </div>
+          </div>
+
+          <!-- Download JSON Report Button -->
+          <div class="mt-6 pt-4 border-t border-[#22343e]">
+            <button id="btnExportReport" class="btn-glow-purple w-full py-2.5 px-4 text-xs font-semibold flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              <span data-i18n="downloadReport">EXPORT FORENSIC AUDIT REPORT (JSON)</span>
+            </button>
           </div>
         </div>
 
-        <!-- Threat & Forensic Badges Spec -->
-        <div class="space-y-2 pt-3">
-          <b class="text-xs font-mono text-slate-300 block uppercase tracking-wider">Forensic Badges & Status Tokens:</b>
-          <div class="flex flex-wrap gap-2">
-            <span class="pill-badge pill-safe">🟢 AUTHENTIC HUMAN (SAFE)</span>
-            <span class="pill-badge pill-warn">🟡 SUSPICIOUS DEGRADATION</span>
-            <span class="pill-badge pill-danger">🔴 SYNTHETIC CLONE (BLOCKED)</span>
-            <span class="pill-badge pill-accent">⚡ INT8 QUANTIZED (20.9ms)</span>
-            <span class="pill-badge pill-biometric">🛡️ BIOMETRIC MATCH (0.84)</span>
+        <!-- 2D Mel-Spectrogram Forensic Heatmap -->
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold font-syne text-slate-200 uppercase tracking-wider flex items-center gap-2">
+              <span>🌈</span> Mel-Spectrogram Forensic Heatmap
+            </h3>
+            <span class="text-[10px] font-mono text-slate-500">128 Mel Channels • dB Scale</span>
+          </div>
+
+          <div class="relative w-full h-56 bg-[#080c10] rounded-xl border border-[#22343e] overflow-hidden flex items-center justify-center">
+            <img id="spectrogramImg" class="w-full h-full object-cover hidden" alt="Mel-Spectrogram Forensic Heatmap">
+            <div id="spectrogramPlaceholder" class="text-center p-6 text-slate-500 text-xs font-mono">
+              <span class="text-2xl mb-2 block">📡</span>
+              Run a forensic scan to generate high-resolution mel-spectrogram
+            </div>
           </div>
         </div>
 
@@ -866,61 +550,53 @@
 
   </main>
 
-  <!-- ==========================================
-       SETTINGS MODAL (THRESHOLDS)
-       ========================================== -->
-  <div id="thresholdsModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="forensic-card max-w-md w-full space-y-4">
-      <div class="forensic-card-header">
-        <span class="forensic-card-title">⚙️ Configure Risk Thresholds</span>
-        <button id="btnCloseThresholds" class="text-slate-400 hover:text-white">&times;</button>
+  <!-- Risk Threshold Configuration Modal -->
+  <div id="thresholdModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 space-y-5 border border-cyan-500/40 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-[#22343e]">
+        <h4 class="text-base font-bold text-slate-100 font-syne flex items-center gap-2">
+          <span>⚙️</span> Threat Risk Thresholds
+        </h4>
+        <button id="btnCloseThresholds" aria-label="Close modal" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
-      <div class="space-y-3 font-mono text-xs">
+
+      <div class="space-y-4">
         <div>
-          <div class="flex justify-between mb-1">
-            <label>Low Risk Threshold (Safe):</label>
-            <span id="lowThresholdVal" class="text-emerald-400 font-bold">30%</span>
+          <div class="flex justify-between text-xs font-mono mb-1">
+            <span class="text-emerald-400">Low Risk Cutoff (Safe):</span>
+            <span id="valLowThreshold" class="font-bold text-white">30%</span>
           </div>
-          <input type="range" id="lowThresholdSlider" min="10" max="45" value="30" class="w-full accent-sky-400">
+          <input type="range" id="sliderLowThreshold" min="10" max="50" value="30" class="w-full accent-cyan-400 cursor-pointer">
         </div>
+
         <div>
-          <div class="flex justify-between mb-1">
-            <label>High Risk Threshold (Threat):</label>
-            <span id="highThresholdVal" class="text-rose-400 font-bold">70%</span>
+          <div class="flex justify-between text-xs font-mono mb-1">
+            <span class="text-red-400">High Risk Cutoff (Threat):</span>
+            <span id="valHighThreshold" class="font-bold text-white">70%</span>
           </div>
-          <input type="range" id="highThresholdSlider" min="55" max="90" value="70" class="w-full accent-rose-400">
+          <input type="range" id="sliderHighThreshold" min="50" max="90" value="70" class="w-full accent-red-400 cursor-pointer">
         </div>
-        <p class="text-[10px] text-slate-400">Adjust the decision boundary for call interception alerts.</p>
       </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button id="btnSaveThresholds" class="btn-forensic-primary text-xs">Save Configuration</button>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button id="btnSaveThresholds" class="btn-glow-cyan px-4 py-2 text-xs font-bold rounded-lg">
+          Apply & Save
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================
-       CASE INSPECTION MODAL (AUDIT DETAIL)
-       ========================================== -->
-  <div id="caseInspectionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="forensic-card max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4">
-      <div class="forensic-card-header">
-        <span class="forensic-card-title" id="modalCaseIdTitle">CASE DOSSIER INSPECTION</span>
-        <button id="btnCloseCaseModal" class="text-slate-400 hover:text-white text-xl">&times;</button>
-      </div>
-      <div id="caseModalContent" class="space-y-3 font-mono text-xs">
-        <!-- Filled dynamically -->
-      </div>
-      <div class="flex justify-between pt-3 border-t border-[#1e2c3a]">
-        <button id="btnDownloadDossierJson" class="btn-forensic-primary text-xs">Download Evidence Dossier</button>
-        <button id="btnCloseCaseModalBtn" class="btn-forensic-secondary text-xs">Close</button>
-      </div>
+  <!-- Footer -->
+  <footer class="border-t border-[#22343e] bg-[#080c10] py-4 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>VoiceGuard AI © 2026 • SIH26104 Smart India Hackathon</div>
+      <div>ResNet-SE CNN • 142 Tabular Features • Biometric Voiceprint Verification</div>
     </div>
-  </div>
+  </footer>
 
-  <!-- Toast Notification System -->
-  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
-
-  <!-- Client Application Engine -->
+  <!-- Unified Main JavaScript -->
   <script src="./app.js"></script>
 </body>
 </html>
