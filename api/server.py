@@ -385,6 +385,7 @@ async def analyze_audio(
             "latency_ms": latency_ms,
             "codec_simulation_applied": simulate_codec or "none",
             "analysis": risk_result,
+            "deepfake_analysis": risk_result,
             "speaker_verification": dual_factor_result,
             "models_raw": {
                 "deep_cnn": deep_result,
@@ -447,7 +448,12 @@ async def analyze_stream_chunk(
             "calibration_mode": risk_result["calibration"]["mode"],
             "latency_ms": latency_ms,
             "alert": risk_result["risk_level"] == "HIGH",
+            "verdict": risk_result["verdict"],
+            "advisory": risk_result["advisory"],
             "advisory_title": risk_result["advisory"]["title"],
+            "indicators": risk_result["indicators"],
+            "analysis": risk_result,
+            "deepfake_analysis": risk_result,
             "timestamp": time.time(),
         }
     except Exception as e:
@@ -558,9 +564,17 @@ if os.path.exists(FRONTEND_DIR):
     def serve_styles():
         return FileResponse(os.path.join(FRONTEND_DIR, "styles.css"), media_type="text/css")
 
+    @app.get("/tokens.css")
+    def serve_tokens():
+        return FileResponse(os.path.join(FRONTEND_DIR, "tokens.css"), media_type="text/css")
+
     @app.get("/app.js")
     def serve_app_js():
         return FileResponse(os.path.join(FRONTEND_DIR, "app.js"), media_type="application/javascript")
+
+    @app.get("/script.js")
+    def serve_script_js():
+        return FileResponse(os.path.join(FRONTEND_DIR, "script.js"), media_type="application/javascript")
 
     @app.get("/", response_class=HTMLResponse)
     def serve_index():
