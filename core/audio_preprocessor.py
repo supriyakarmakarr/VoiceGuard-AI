@@ -6,7 +6,6 @@ silence trimming, and segment framing for ML and Deep Learning feature extractio
 
 import io
 import os
-import wave
 import numpy as np
 import soundfile as sf
 import librosa
@@ -49,6 +48,20 @@ class AudioPreprocessor:
                 return data.astype(np.float32), sr
 
         elif isinstance(audio_source, bytes):
+            # If RIFF WAV with unfinalized or broken header size (common in browser streaming chunks), repair sizes
+            if audio_source.startswith(b"RIFF") and len(audio_source) >= 44:
+                try:
+                    import struct
+                    file_size = len(audio_source)
+                    patched = bytearray(audio_source)
+                    struct.pack_into("<I", patched, 4, file_size - 8)
+                    data_pos = patched.find(b"data")
+                    if data_pos != -1 and data_pos + 8 <= file_size:
+                        struct.pack_into("<I", patched, data_pos + 4, file_size - (data_pos + 8))
+                    audio_source = bytes(patched)
+                except Exception:
+                    pass
+
             byte_io = io.BytesIO(audio_source)
             # 1. Try SoundFile
             try:
@@ -153,7 +166,8 @@ class AudioPreprocessor:
 
     def pad_or_truncate(self, audio: np.ndarray, target_length: int = None) -> np.ndarray:
         """
-        Pads with repeat/reflection or truncates audio to exact target length in samples.
+        Pads with crossfaded repeat or truncates audio to exact target length in samples.
+        Smooths loop boundaries to avoid artificial high-frequency transient clicks.
         """
         if target_length is None:
             target_length = self.target_samples
@@ -166,8 +180,16 @@ class AudioPreprocessor:
             return audio[start : start + target_length]
         else:
             if curr_len > 0:
+                # Apply 10ms smooth fade-in/fade-out to avoid edge pops when tiling
+                fade_len = min(160, curr_len // 4)
+                faded_audio = audio.copy()
+                if fade_len > 4:
+                    fade_window = np.linspace(0.0, 1.0, fade_len, dtype=np.float32)
+                    faded_audio[:fade_len] *= fade_window
+                    faded_audio[-fade_len:] *= fade_window[::-1]
+
                 reps = int(np.ceil(target_length / curr_len))
-                repeated = np.tile(audio, reps)
+                repeated = np.tile(faded_audio, reps)
                 return repeated[:target_length]
             else:
                 return np.zeros(target_length, dtype=np.float32)
