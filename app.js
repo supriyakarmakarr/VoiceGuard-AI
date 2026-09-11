@@ -102,6 +102,89 @@ const presets = {
       ['Noise-floor variation', '−21 dB', 'MEDIUM'],
       ['Pitch jitter', 'within range', 'LOW']
     ]
+  },
+  multispeaker: {
+    name: 'sample_03_multi_speaker_call.wav',
+    duration: '00:36.50',
+    risk: 86,
+    verdict: 'AI DETECTED IN SPEAKER 2',
+    tag: 'ELEVATED RISK',
+    confidence: '95%',
+    agreement: '92%',
+    rate: '16 kHz',
+    range: '0–8 kHz',
+    severity: 'high',
+    evidence: [
+      ['Speaker 2 (AI-Cloned)', '94% Synthetic (WavLM/AASIST/RawNet)', 'HIGH'],
+      ['Speaker 1 (Genuine Human)', '97% Authentic Human', 'LOW'],
+      ['Speaker 3 (Genuine Human)', '91% Authentic Human', 'LOW'],
+      ['Neural Vocoder Shelf', 'Speaker 2 7.4 kHz cutoff', 'HIGH'],
+      ['Phase Discontinuity', 'Speaker 2 time 00:18–00:23', 'HIGH']
+    ],
+    diarization: {
+      num_speakers: 3,
+      speaker_turns: [
+        { speaker: 'Speaker 1', start: 0.0, end: 12.0, duration: 12.0 },
+        { speaker: 'Speaker 2', start: 12.0, end: 24.5, duration: 12.5 },
+        { speaker: 'Speaker 3', start: 24.5, end: 36.5, duration: 12.0 }
+      ],
+      speaker_stats: {
+        'Speaker 1': { total_time_sec: 12.0, percentage: 32.9, turn_count: 1 },
+        'Speaker 2': { total_time_sec: 12.5, percentage: 34.2, turn_count: 1 },
+        'Speaker 3': { total_time_sec: 12.0, percentage: 32.9, turn_count: 1 }
+      },
+      timeline_summary: 'Identified 3 speakers across 3 conversational turns.',
+      speakers: [
+        {
+          speaker_id: 'Speaker 1',
+          speaking_time_sec: 12.0,
+          percentage: 32.9,
+          turn_count: 1,
+          verdict: 'REAL',
+          badge: '🟢 REAL 97%',
+          description: 'Natural Human Voice',
+          synthetic_probability: 3.0,
+          genuine_probability: 97.0,
+          confidence: 97.0,
+          agreement_score: 95.0,
+          model_scores: { wavlm: 2.5, aasist: 3.0, rawnet: 4.0, vocoder: 3.5, spec_cnn: 2.0 },
+          suspicious_intervals: []
+        },
+        {
+          speaker_id: 'Speaker 2',
+          speaking_time_sec: 12.5,
+          percentage: 34.2,
+          turn_count: 1,
+          verdict: 'AI_GENERATED',
+          badge: '🔴 AI-GENERATED 94%',
+          description: 'High-Risk Synthetic / AI Clone',
+          synthetic_probability: 94.0,
+          genuine_probability: 6.0,
+          confidence: 94.0,
+          agreement_score: 92.0,
+          model_scores: { wavlm: 91.0, aasist: 95.0, rawnet: 89.0, vocoder: 96.0, spec_cnn: 93.0 },
+          suspicious_intervals: [
+            { label: '00:18 — 00:23', start_sec: 18.0, end_sec: 23.0, duration_sec: 5.0, risk_score: 94.5, reason: 'Neural Vocoder Phase Glitch' },
+            { label: '00:31 — 00:35', start_sec: 31.0, end_sec: 35.0, duration_sec: 4.0, risk_score: 91.0, reason: 'Robotic Cadence & Prosodic Monotonicity' }
+          ]
+        },
+        {
+          speaker_id: 'Speaker 3',
+          speaking_time_sec: 12.0,
+          percentage: 32.9,
+          turn_count: 1,
+          verdict: 'REAL',
+          badge: '🟢 REAL 91%',
+          description: 'Natural Human Voice',
+          synthetic_probability: 9.0,
+          genuine_probability: 91.0,
+          confidence: 91.0,
+          agreement_score: 90.0,
+          model_scores: { wavlm: 8.0, aasist: 9.5, rawnet: 11.0, vocoder: 8.0, spec_cnn: 7.5 },
+          suspicious_intervals: []
+        }
+      ]
+    }
   }
 };
 
@@ -831,6 +914,176 @@ function renderResult(result) {
     recordLabelText.textContent = dict.recordCaptured;
     recordDetail.textContent = dict.recordComplete || 'Analysis complete — see forensic readout on the right ↗';
   }
+
+  // Render Multi-Speaker Diarization Timeline if available
+  if (result.diarization && result.diarization.speakers && result.diarization.speakers.length > 0) {
+    renderMultiSpeakerDiarization(result.diarization, result.durationSeconds || (parseFloat(result.duration) || 18.0));
+  } else {
+    const diarSec = $('#diarizationSection');
+    if (diarSec) diarSec.hidden = true;
+  }
+}
+
+let currentIsolatedAudio = null;
+
+function renderMultiSpeakerDiarization(diarization, totalDurationSec) {
+  const section = $('#diarizationSection');
+  if (!section) return;
+  section.hidden = false;
+
+  const countPill = $('#speakerCountText');
+  if (countPill) {
+    const num = diarization.num_speakers || (diarization.speakers ? diarization.speakers.length : 1);
+    const turns = diarization.speaker_turns ? diarization.speaker_turns.length : 0;
+    countPill.textContent = `${num} Speaker${num > 1 ? 's' : ''} Detected (${turns} Conversational Turns)`;
+  }
+
+  const midEl = $('#timelineMidPoint');
+  const endEl = $('#timelineEndPoint');
+  if (midEl) midEl.textContent = formatDuration(totalDurationSec / 2);
+  if (endEl) endEl.textContent = formatDuration(totalDurationSec);
+
+  // Render Horizontal Timeline Bar
+  const timelineBar = $('#timelineBar');
+  if (timelineBar) {
+    timelineBar.innerHTML = '';
+    const turns = diarization.speaker_turns || [];
+    turns.forEach((turn) => {
+      const pct = Math.max(3, (turn.duration / Math.max(totalDurationSec, 0.1)) * 100);
+      const spkIdx = (parseInt((turn.speaker || '1').replace(/\D/g, '')) || 1) - 1;
+      const turnEl = document.createElement('div');
+      turnEl.className = `timeline-turn speaker-color-${spkIdx % 6}`;
+      turnEl.style.width = `${pct}%`;
+      turnEl.textContent = turn.speaker;
+      turnEl.title = `${turn.speaker} [${turn.start}s – ${turn.end}s] (${turn.duration}s)`;
+      turnEl.addEventListener('click', () => {
+        if (audioPreview && audioPreview.src) {
+          audioPreview.currentTime = turn.start;
+          audioPreview.play();
+        }
+      });
+      timelineBar.appendChild(turnEl);
+    });
+  }
+
+  // Render Speaker Cards Grid
+  const grid = $('#speakersGrid');
+  if (grid) {
+    grid.innerHTML = '';
+    const speakers = diarization.speakers || [];
+    speakers.forEach((spk) => {
+      const spkIdx = (parseInt((spk.speaker_id || '1').replace(/\D/g, '')) || 1) - 1;
+      const isAI = spk.verdict === 'AI_GENERATED';
+      const isUncertain = spk.verdict === 'UNCERTAIN';
+      const borderClass = isAI ? 'border-ai' : (isUncertain ? 'border-uncertain' : 'border-real');
+      const badgeClass = isAI ? 'badge-ai' : (isUncertain ? 'badge-uncertain' : 'badge-real');
+
+      const card = document.createElement('div');
+      card.className = `speaker-card ${borderClass}`;
+
+      // Model consensus bars
+      const m = spk.model_scores || {};
+      const renderBar = (name, val) => {
+        const score = Math.round(val !== undefined ? val : 15);
+        const fillClass = score >= 70 ? 'fill-high' : (score >= 35 ? 'fill-med' : 'fill-low');
+        return `
+          <div class="model-bar-row">
+            <span>${name}</span>
+            <div class="model-bar-track"><div class="model-bar-fill ${fillClass}" style="width: ${score}%"></div></div>
+            <span>${score}%</span>
+          </div>
+        `;
+      };
+
+      // Suspicious intervals chips
+      let suspiciousHtml = '';
+      if (spk.suspicious_intervals && spk.suspicious_intervals.length > 0) {
+        suspiciousHtml = `
+          <div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--color-ink-muted); margin-top: 4px;">
+            ⚠️ Suspicious Intervals:
+          </div>
+          <div class="suspicious-chips-wrap">
+            ${spk.suspicious_intervals.map(iv => `
+              <span class="suspicious-chip" data-start="${iv.start_sec}" title="${iv.reason} (${iv.risk_score}%)">
+                ${iv.label}
+              </span>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // Audio player button
+      let audioBtnHtml = '';
+      if (spk.audio_b64) {
+        audioBtnHtml = `
+          <div class="speaker-audio-ctrl">
+            <button class="speaker-play-btn" type="button">
+              <span>▶</span> Listen to ${spk.speaker_id} Only
+            </button>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="speaker-card-header">
+          <div class="speaker-title-group">
+            <div class="speaker-avatar speaker-color-${spkIdx % 6}">
+              ${spk.speaker_id.replace(/\D/g, '') || (spkIdx + 1)}
+            </div>
+            <div class="speaker-meta-info">
+              <h3>${spk.speaker_id}</h3>
+              <span>Talk time: ${spk.speaking_time_sec}s (${spk.percentage}%) · ${spk.turn_count} turns</span>
+            </div>
+          </div>
+          <span class="tier-badge ${badgeClass}">${spk.badge}</span>
+        </div>
+
+        <div class="model-consensus-wrap">
+          <div style="font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; justify-content: space-between;">
+            <span>5-Model Ensemble</span>
+            <span style="color: var(--color-accent);">Agreement: ${spk.agreement_score || 92}%</span>
+          </div>
+          ${renderBar('WavLM', m.wavlm)}
+          ${renderBar('AASIST', m.aasist)}
+          ${renderBar('RawNet', m.rawnet)}
+          ${renderBar('Vocoder', m.vocoder)}
+          ${renderBar('Spec-CNN', m.spec_cnn)}
+        </div>
+
+        ${suspiciousHtml}
+        ${audioBtnHtml}
+      `;
+
+      // Event listener for suspicious chips
+      card.querySelectorAll('.suspicious-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const sTime = parseFloat(chip.dataset.start || 0);
+          if (audioPreview && audioPreview.src) {
+            audioPreview.currentTime = sTime;
+            audioPreview.play();
+          }
+        });
+      });
+
+      // Event listener for isolated speaker playback
+      const playBtn = card.querySelector('.speaker-play-btn');
+      if (playBtn && spk.audio_b64) {
+        playBtn.addEventListener('click', () => {
+          if (currentIsolatedAudio) {
+            currentIsolatedAudio.pause();
+          }
+          currentIsolatedAudio = new Audio(spk.audio_b64);
+          currentIsolatedAudio.play();
+          playBtn.innerHTML = '<span>⏸</span> Playing...';
+          currentIsolatedAudio.onended = () => {
+            playBtn.innerHTML = `<span>▶</span> Listen to ${spk.speaker_id} Only`;
+          };
+        });
+      }
+
+      grid.appendChild(card);
+    });
+  }
 }
 
 // Run Forensic Analysis
@@ -927,6 +1180,7 @@ async function runAnalysis() {
                 result = {
                   name: selectedAudio.name,
                   duration: formatDuration(data.duration_seconds || df.forensic_metrics?.audio_duration_sec || 4.0),
+                  durationSeconds: data.duration_seconds || 4.0,
                   risk: risk,
                   verdict: verdictText,
                   tag: tagText,
@@ -936,7 +1190,9 @@ async function runAnalysis() {
                   range: `0–${(data.sample_rate_hz || 16000) / 2000} kHz`,
                   severity: sev,
                   evidence: evidenceList,
-                  spectrogram: data.spectrogram_image || null
+                  spectrogram: data.spectrogram_image || null,
+                  diarization: data.diarization || null,
+                  overall_verdict: data.overall_verdict || null
                 };
               }
             }
