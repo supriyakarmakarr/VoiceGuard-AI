@@ -13,22 +13,69 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#top" aria-label="VoiceGuard AI home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><strong>VOICEGUARD</strong><small>AUDIO FORENSICS</small></span></a>
-    <nav class="main-nav" aria-label="Main navigation"><a class="is-active" href="#analyze" aria-current="page">Analyze</a><a href="#live-detect">Live Detect</a><a href="#history">History</a><a href="#about">About</a></nav>
-    <div class="languages" aria-label="Language selector"><button class="is-selected" data-lang="en" type="button" aria-pressed="true" aria-label="English">EN</button><span>/</span><button data-lang="hi" type="button" aria-pressed="false" aria-label="Hindi">हिं</button><span>/</span><button data-lang="bn" type="button" aria-pressed="false" aria-label="Bengali">বাং</button></div>
+    <a class="brand" href="#top" aria-label="VoiceGuard AI home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span><strong>VOICEGUARD</strong><small>AUDIO FORENSICS</small></span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="is-active" href="#analyze" aria-current="page">Analyze</a>
+      <a href="#live-detect">Live Detect</a>
+      <a href="#history">History</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="languages" aria-label="Language selector">
+      <button class="is-selected" data-lang="en" type="button" aria-pressed="true" aria-label="English">EN</button>
+      <span>/</span>
+      <button data-lang="hi" type="button" aria-pressed="false" aria-label="Hindi">हिं</button>
+      <span>/</span>
+      <button data-lang="bn" type="button" aria-pressed="false" aria-label="Bengali">বাং</button>
+    </div>
   </header>
 
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow"><span></span> <span class="translatable" data-key="heroEyebrow">SYNTHETIC SPEECH INVESTIGATION</span></p><h1 id="hero-title"><span class="glitch-text" data-text="Know if a voice">Know if a voice</span><br /><span class="headline-mark"><span class="translatable" data-key="heroMark">is real.</span><svg class="headline-underline" viewBox="0 0 210 14" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 9.5C40 3 96 2 122 7.5C150 13 178 6 208 4" /></svg></span></h1><p class="hero-text translatable" data-key="heroText">VoiceGuard AI analyzes acoustic patterns, spectral behavior, and vocal characteristics to identify signs of synthetic speech.</p><div class="hero-actions"><a class="btn btn-primary" href="#analyze"><span class="translatable" data-key="analyzeBtn">Analyze Audio</span> <span aria-hidden="true">↘</span></a><button class="btn btn-secondary" id="heroSample" type="button"><span class="translatable" data-key="trySampleBtn">Try a Sample</span> <span aria-hidden="true">→</span></button></div><dl class="hero-stats"><div><dt class="translatable" data-key="statSignals">Signals modeled</dt><dd>2</dd></div><div><dt class="translatable" data-key="statWindow">Analysis window</dt><dd>20 ms</dd></div><div><dt class="translatable" data-key="statFormats">Formats read</dt><dd>5</dd></div></dl></div>
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> <span class="translatable" data-key="heroEyebrow">SYNTHETIC SPEECH INVESTIGATION</span></p>
+        <h1 id="hero-title"><span class="glitch-text" data-text="Know if a voice">Know if a voice</span><br /><span class="headline-mark"><span class="translatable" data-key="heroMark">is real.</span><svg class="headline-underline" viewBox="0 0 210 14" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 9.5C40 3 96 2 122 7.5C150 13 178 6 208 4" /></svg></span></h1>
+        <p class="hero-text translatable" data-key="heroText">VoiceGuard AI analyzes acoustic patterns, spectral behavior, and vocal characteristics to identify signs of synthetic speech.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#analyze"><span class="translatable" data-key="analyzeBtn">Analyze Audio</span> <span aria-hidden="true">↘</span></a>
+          <button class="btn btn-secondary" id="heroSample" type="button"><span class="translatable" data-key="trySampleBtn">Try a Sample</span> <span aria-hidden="true">→</span></button>
+        </div>
+        <dl class="hero-stats">
+          <div><dt class="translatable" data-key="statSignals">Signals modeled</dt><dd>5</dd></div>
+          <div><dt class="translatable" data-key="statWindow">Analysis window</dt><dd>20 ms</dd></div>
+          <div><dt class="translatable" data-key="statFormats">Formats read</dt><dd>6</dd></div>
+        </dl>
+      </div>
+
       <figure class="hero-instrument" aria-label="Animated audio signal analysis visualization">
-        <div class="instrument-top"><span><span class="live-label">LIVE</span> SPECTRAL SCAN</span><span class="signal-state"><i><b></b></i> SIGNAL DETECTED</span></div>
-        <div class="signal-grid"><span class="grid-label label-y">+12 dB</span><span class="grid-label label-x">00:00.00</span><span class="grid-label label-r">24 kHz</span>
+        <div class="instrument-top">
+          <span><span class="live-label">LIVE</span> SPECTRAL SCAN</span>
+          <span class="signal-state"><i><b></b></i> SIGNAL DETECTED</span>
+        </div>
+        <div class="signal-grid">
+          <span class="grid-label label-y">+12 dB</span>
+          <span class="grid-label label-x">00:00.00</span>
+          <span class="grid-label label-r">24 kHz</span>
           <svg class="signal-trace" viewBox="0 0 760 338" role="img" aria-label="A waveform being scanned">
             <defs>
-              <linearGradient id="waveColor" x1="0" x2="1"><stop class="wave-start" offset="0"/><stop class="wave-end" offset="1"/></linearGradient>
-              <linearGradient id="formantColor" x1="0" x2="1"><stop class="formant-start" offset="0"/><stop class="formant-end" offset="1"/></linearGradient>
-              <clipPath id="scanClip"><rect class="scan-reveal" x="0" y="0" width="0" height="338" /></clipPath>
+              <linearGradient id="waveColor" x1="0" x2="1">
+                <stop class="wave-start" offset="0" stop-color="var(--accent, #e8850c)"/>
+                <stop class="wave-end" offset="1" stop-color="var(--coral, #f87171)"/>
+              </linearGradient>
+              <linearGradient id="formantColor" x1="0" x2="1">
+                <stop class="formant-start" offset="0" stop-color="var(--blue, #3b82f6)"/>
+                <stop class="formant-end" offset="1" stop-color="var(--violet, #8b5cf6)"/>
+              </linearGradient>
+              <linearGradient id="scannerBeam" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#e8850c" stop-opacity="0.1"/>
+                <stop offset="50%" stop-color="#e8850c" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#f87171" stop-opacity="0.2"/>
+              </linearGradient>
+              <clipPath id="scanClip">
+                <rect class="scan-reveal" x="0" y="0" width="0" height="338" />
+              </clipPath>
             </defs>
             <g class="spectrogram" clip-path="url(#scanClip)">
               <rect x="22" y="78" width="14" height="126"/><rect x="45" y="129" width="14" height="75"/><rect x="68" y="102" width="14" height="102"/><rect x="91" y="154" width="14" height="50"/><rect x="114" y="66" width="14" height="138"/><rect x="137" y="111" width="14" height="93"/><rect x="160" y="141" width="14" height="63"/><rect x="183" y="52" width="14" height="152"/><rect x="206" y="118" width="14" height="86"/><rect x="229" y="79" width="14" height="125"/><rect x="252" y="145" width="14" height="59"/><rect x="275" y="94" width="14" height="110"/><rect x="298" y="125" width="14" height="79"/><rect x="321" y="62" width="14" height="142"/><rect x="344" y="152" width="14" height="52"/><rect x="367" y="107" width="14" height="97"/><rect x="390" y="133" width="14" height="71"/><rect x="413" y="85" width="14" height="119"/><rect x="436" y="151" width="14" height="53"/><rect x="459" y="69" width="14" height="135"/><rect x="482" y="116" width="14" height="88"/><rect x="505" y="141" width="14" height="63"/><rect x="528" y="96" width="14" height="108"/><rect x="551" y="132" width="14" height="72"/><rect x="574" y="73" width="14" height="131"/><rect x="597" y="124" width="14" height="80"/><rect x="620" y="102" width="14" height="102"/><rect x="643" y="151" width="14" height="53"/><rect x="666" y="88" width="14" height="116"/><rect x="689" y="128" width="14" height="76"/><rect x="712" y="105" width="14" height="99"/>
@@ -42,45 +89,214 @@
             <path class="formant-path" pathLength="1" d="M0,232 C34,214 66,250 96,222 S158,178 188,224 S250,266 282,218 S344,168 376,222 S438,268 470,216 S532,172 564,222 S626,260 658,214 S716,180 760,220" />
             <path class="wave-shadow" d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
             <path class="wave-path" pathLength="1" d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
-            <line class="scanner" x1="0" y1="22" x2="0" y2="316"/><circle class="scan-dot" cx="0" cy="178" r="6"/><circle class="scan-dot-ring" cx="0" cy="178" r="6"/>
+            <line class="scanner" x1="0" y1="22" x2="0" y2="316"/>
+            <circle class="scan-dot-ring" cx="0" cy="178" r="14"/>
+            <circle class="scan-dot" cx="0" cy="178" r="6"/>
           </svg>
-          <div class="signal-note note-one">FORMANT<br /><b>3.8 kHz</b></div><div class="signal-note note-two">PITCH TRACE<br /><b>204 Hz</b></div><div class="signal-note note-three">JITTER<br /><b>± 1.2 Hz</b></div>
+          <div class="signal-note note-one">FORMANT<br /><b>3.8 kHz</b></div>
+          <div class="signal-note note-two">PITCH TRACE<br /><b>204 Hz</b></div>
+          <div class="signal-note note-three">JITTER<br /><b>± 1.2 Hz</b></div>
         </div>
-        <figcaption><span>CHANNEL: MONO</span><span>48,000 Hz</span><span>ANALYSIS WINDOW: 20 ms</span></figcaption>
+        <figcaption>
+          <span>CHANNEL: MONO</span>
+          <span>48,000 Hz</span>
+          <span>ANALYSIS WINDOW: 20 ms</span>
+        </figcaption>
       </figure>
     </section>
 
     <section class="workspace" id="analyze" aria-labelledby="analyze-title">
-      <div class="section-intro"><p class="eyebrow"><span></span> <span class="translatable" data-key="workspaceEyebrow">WORKSPACE / 01</span></p><h2 id="analyze-title" class="translatable" data-key="workspaceTitle">Bring a voice into focus.</h2><p class="translatable" data-key="workspaceDesc">Load a recording, select a controlled sample, or capture a short clip live.</p></div>
+      <div class="section-intro">
+        <p class="eyebrow"><span></span> <span class="translatable" data-key="workspaceEyebrow">WORKSPACE / 01</span></p>
+        <h2 id="analyze-title" class="translatable" data-key="workspaceTitle">Bring a voice into focus.</h2>
+        <p class="translatable" data-key="workspaceDesc">Load a recording, select a controlled sample, or capture a short clip live.</p>
+      </div>
+
       <div class="instrument-workbench">
         <div class="input-column">
           <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Drop an audio file or browse from device" aria-controls="fileMeta">
-            <input id="audioInput" type="file" accept="audio/mpeg,audio/wav,audio/x-m4a,audio/flac,audio/ogg" hidden />
-            <svg viewBox="0 0 70 58" aria-hidden="true"><path d="M5 39h10V20h8v30H15v-7H5zM29 9h8v40h-8zM43 18h8v22h-8zM57 2h8v54h-8z" /></svg>
-            <strong id="filePrompt" class="translatable" data-key="dropPrompt">Drop an audio file here</strong><span class="translatable" data-key="dropSub">or browse from your device</span><small>MP3 · WAV · M4A · FLAC · OGG</small>
+            <input id="audioInput" type="file" accept="audio/mpeg,audio/wav,audio/x-m4a,audio/flac,audio/ogg,audio/webm,audio/aac" hidden />
+            <svg class="drop-icon" viewBox="0 0 44 38" width="44" height="38" aria-hidden="true">
+              <rect x="3" y="13" width="4" height="15" rx="2" />
+              <rect x="11" y="7" width="4" height="25" rx="2" />
+              <rect x="19" y="2" width="4" height="34" rx="2" />
+              <rect x="27" y="9" width="4" height="21" rx="2" />
+              <rect x="35" y="15" width="4" height="11" rx="2" />
+            </svg>
+            <strong id="filePrompt" class="translatable" data-key="dropPrompt">Drop an audio file here</strong>
+            <span class="translatable" data-key="dropSub">or browse from your device</span>
+            <small>MP3 · WAV · M4A · FLAC · OGG</small>
           </div>
-          <div class="file-meta" id="fileMeta" aria-live="polite"><span>NO FILE LOADED</span><span>—</span></div>
-          <div class="sample-row" aria-label="Demo audio samples"><button class="sample-card" data-sample="clone" type="button" aria-pressed="false"><span class="sample-number">01</span><span class="mini-wave wave-coral"></span><b>AI-cloned voice</b><small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small></button><button class="sample-card" data-sample="human" type="button" aria-pressed="false"><span class="sample-number">02</span><span class="mini-wave wave-blue"></span><b>Natural human speech</b><small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small></button><button class="sample-card" data-sample="processed" type="button" aria-pressed="false"><span class="sample-number">03</span><span class="mini-wave wave-violet"></span><b>Heavily processed audio</b><small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small></button></div>
-          <div class="record-row" id="live-detect"><span class="or-label translatable" data-key="orLabel">OR</span><button class="record-button" id="recordButton" type="button" aria-label="Start recording" aria-pressed="false"><span class="mic-icon" aria-hidden="true">●</span></button><div><strong id="recordLabel"><span class="rec-dot" aria-hidden="true"></span><span id="recordLabelText" class="translatable" data-key="recordPrompt">Record a sample</span></strong><p id="recordDetail" class="translatable" data-key="recordDesc">Use your microphone for a short clip.</p></div><time id="recordTimer">00:00.00</time><canvas id="liveWave" width="170" height="40" aria-label="Live microphone amplitude display"></canvas></div>
+          <div class="file-meta" id="fileMeta" aria-live="polite">
+            <span>NO FILE LOADED</span><span>—</span>
+          </div>
+
+          <div class="sample-row" aria-label="Demo audio samples">
+            <button class="sample-card" data-sample="clone" type="button" aria-pressed="false">
+              <span class="sample-number">01</span>
+              <span class="mini-wave wave-coral" aria-hidden="true"></span>
+              <b>AI-cloned voice</b>
+              <small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small>
+            </button>
+            <button class="sample-card" data-sample="human" type="button" aria-pressed="false">
+              <span class="sample-number">02</span>
+              <span class="mini-wave wave-blue" aria-hidden="true"></span>
+              <b>Natural human speech</b>
+              <small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small>
+            </button>
+            <button class="sample-card" data-sample="processed" type="button" aria-pressed="false">
+              <span class="sample-number">03</span>
+              <span class="mini-wave wave-violet" aria-hidden="true"></span>
+              <b>Heavily processed audio</b>
+              <small class="translatable" data-key="sampleLabel">DEMO SAMPLE</small>
+            </button>
+          </div>
+
+          <div class="record-row" id="live-detect">
+            <span class="or-label translatable" data-key="orLabel">OR</span>
+            <button class="record-button" id="recordButton" type="button" aria-label="Start recording" aria-pressed="false">
+              <span class="mic-icon" aria-hidden="true">●</span>
+            </button>
+            <div>
+              <strong id="recordLabel"><span class="rec-dot" aria-hidden="true"></span><span id="recordLabelText" class="translatable" data-key="recordPrompt">Record a sample</span></strong>
+              <p id="recordDetail" class="translatable" data-key="recordDesc">Use your microphone for a short clip.</p>
+            </div>
+            <time id="recordTimer">00:00.00</time>
+            <canvas id="liveWave" width="170" height="40" aria-label="Live microphone amplitude display"></canvas>
+          </div>
+
           <audio id="audioPreview" controls hidden></audio>
-          <button class="btn btn-primary analyze-button" id="analyzeButton" type="button" hidden style="display:none;"><span class="translatable" data-key="analyzeVoiceBtn">Analyze Voice</span> <span aria-hidden="true">↗</span></button>
+          <button class="btn btn-primary analyze-button" id="analyzeButton" type="button" hidden style="display:none;">
+            <span class="translatable" data-key="analyzeVoiceBtn">Analyze Voice</span> <span aria-hidden="true">↗</span>
+          </button>
         </div>
-        <aside class="readout" aria-live="polite" aria-labelledby="readout-title"><div class="readout-head"><span id="readout-title" class="translatable" data-key="readoutTitle">FORENSIC READOUT</span><span id="readoutStatus" class="translatable" data-key="statusAwaiting">AWAITING INPUT</span></div>
-          <div class="empty-readout" id="emptyReadout"><div class="reticle" aria-hidden="true"><span class="radar-beam"></span><span class="sonar-ring"></span></div><p class="translatable" data-key="emptyPrompt">Load an audio signal to initialize a forensic readout.</p></div>
-          <div class="loading-readout" id="loadingReadout" hidden><div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progressLine"></i></div><p id="analysisStage" class="translatable" data-key="uploadReceived">Upload received…</p><small class="translatable" data-key="demoDisclaimer">DEMO SIMULATION — NO LIVE MODEL IS RUNNING</small></div>
-          <div class="result-readout" id="resultReadout" hidden><div class="verdict-row"><div><small class="translatable" data-key="verdictLabel">VERDICT</small><strong id="verdictText">LIKELY SYNTHETIC</strong></div><span id="verdictTag">ELEVATED RISK</span></div><div class="score-and-meta"><div class="gauge-wrap"><svg class="gauge-svg" viewBox="0 0 160 160" aria-label="Risk score gauge"><circle class="gauge-bg" cx="80" cy="80" r="63"/><circle class="gauge-value" id="gaugeValue" cx="80" cy="80" r="63"/><text x="80" y="74" id="gaugeScore">78</text><text x="80" y="96">/ 100</text></svg><span class="translatable" data-key="riskScoreLabel">RISK SCORE</span></div><dl class="tech-meta"><div><dt class="translatable" data-key="dtConfidence">Confidence</dt><dd id="confidence">94%</dd></div><div><dt class="translatable" data-key="dtAgreement">Model agreement</dt><dd id="agreement">87%</dd></div><div><dt class="translatable" data-key="dtDuration">Audio duration</dt><dd id="duration">00:18.42</dd></div><div><dt class="translatable" data-key="dtRate">Sample rate</dt><dd id="rate">48 kHz</dd></div><div><dt class="translatable" data-key="dtRange">Frequency range</dt><dd id="range">0–24 kHz</dd></div></dl></div>
-            <details class="evidence" open><summary><span class="translatable" data-key="evidenceLabel">Forensic Evidence</span> <span class="evidence-toggle" aria-hidden="true">+</span></summary><div id="evidenceRows"></div></details><button class="btn btn-secondary report-button" id="reportButton" type="button" disabled><span class="translatable" data-key="downloadReportBtn">Download Report</span> <span aria-hidden="true">↓</span></button>
+
+        <aside class="readout" aria-live="polite" aria-labelledby="readout-title">
+          <div class="readout-head">
+            <span id="readout-title" class="translatable" data-key="readoutTitle">FORENSIC READOUT</span>
+            <span id="readoutStatus" class="translatable" data-key="statusAwaiting">AWAITING INPUT</span>
+          </div>
+          
+          <div class="empty-readout" id="emptyReadout">
+            <div class="reticle" aria-hidden="true">
+              <span class="radar-beam"></span>
+              <span class="sonar-ring"></span>
+              <span class="sonar-ring sonar-ring-2"></span>
+              <span class="reticle-crosshair"></span>
+            </div>
+            <p class="translatable" data-key="emptyPrompt">Load an audio signal to initialize a forensic readout.</p>
+          </div>
+
+          <div class="loading-readout" id="loadingReadout" hidden>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <i id="progressLine"></i>
+            </div>
+            <p id="analysisStage" class="translatable" data-key="uploadReceived">Upload received…</p>
+            <small class="translatable" data-key="demoDisclaimer">DEMO SIMULATION — NO LIVE MODEL IS RUNNING</small>
+          </div>
+
+          <div class="result-readout" id="resultReadout" hidden>
+            <div class="verdict-row">
+              <div>
+                <small class="translatable" data-key="verdictLabel">VERDICT</small>
+                <strong id="verdictText">LIKELY SYNTHETIC</strong>
+              </div>
+              <span id="verdictTag">ELEVATED RISK</span>
+            </div>
+            <div class="score-and-meta">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 160 160" aria-label="Risk score gauge">
+                  <circle class="gauge-bg" cx="80" cy="80" r="63"/>
+                  <circle class="gauge-value" id="gaugeValue" cx="80" cy="80" r="63"/>
+                  <text x="80" y="74" id="gaugeScore">78</text>
+                  <text x="80" y="96">/ 100</text>
+                </svg>
+                <span class="translatable" data-key="riskScoreLabel">RISK SCORE</span>
+              </div>
+              <dl class="tech-meta">
+                <div><dt class="translatable" data-key="dtConfidence">Confidence</dt><dd id="confidence">94%</dd></div>
+                <div><dt class="translatable" data-key="dtAgreement">Model agreement</dt><dd id="agreement">87%</dd></div>
+                <div><dt class="translatable" data-key="dtDuration">Audio duration</dt><dd id="duration">00:18.42</dd></div>
+                <div><dt class="translatable" data-key="dtRate">Sample rate</dt><dd id="rate">48 kHz</dd></div>
+                <div><dt class="translatable" data-key="dtRange">Frequency range</dt><dd id="range">0–24 kHz</dd></div>
+              </dl>
+            </div>
+            <details class="evidence" open>
+              <summary><span class="translatable" data-key="evidenceLabel">Forensic Evidence</span> <span class="evidence-toggle" aria-hidden="true">+</span></summary>
+              <div id="evidenceRows"></div>
+            </details>
+            <button class="btn btn-secondary report-button" id="reportButton" type="button" disabled>
+              <span class="translatable" data-key="downloadReportBtn">Download Report</span> <span aria-hidden="true">↓</span>
+            </button>
           </div>
         </aside>
       </div>
     </section>
 
-    <section class="method" id="about" aria-labelledby="method-title"><div class="method-heading"><p class="eyebrow"><span></span> <span class="translatable" data-key="methodEyebrow">METHOD / 02</span></p><h2 id="method-title" class="translatable" data-key="methodTitle">Two signals. One<br />forensic decision.</h2></div><div class="method-diagram"><article><span>01</span><h3 class="translatable" data-key="specModelTitle">Spectrogram Model</h3><p class="translatable" data-key="specModelDesc">The system studies frequency patterns and spectral structures that can reveal artifacts commonly associated with synthetic speech.</p><div class="spectrum-bars" aria-hidden="true"></div></article><div class="converge" aria-hidden="true"><i></i><b>×</b><i></i></div><article><span>02</span><h3 class="translatable" data-key="acousticModelTitle">Acoustic Feature Ensemble</h3><p class="translatable" data-key="acousticModelDesc">The system examines pitch behavior, timing, formants, jitter, energy distribution, and other acoustic characteristics.</p><div class="feature-dots" aria-hidden="true"></div></article><div class="forensic-output"><small class="translatable" data-key="combinedSignalLabel">COMBINED SIGNAL</small><strong class="translatable" data-key="forensicResultLabel">FORENSIC<br />RESULT</strong><span>↘</span></div></div></section>
+    <section class="method" id="about" aria-labelledby="method-title">
+      <div class="method-heading">
+        <p class="eyebrow"><span></span> <span class="translatable" data-key="methodEyebrow">METHOD / 02</span></p>
+        <h2 id="method-title" class="translatable" data-key="methodTitle">Two signals. One<br />forensic decision.</h2>
+      </div>
+      <div class="method-diagram">
+        <article>
+          <span>01</span>
+          <h3 class="translatable" data-key="specModelTitle">Spectrogram Model</h3>
+          <p class="translatable" data-key="specModelDesc">The system studies frequency patterns and spectral structures that can reveal artifacts commonly associated with synthetic speech.</p>
+          <div class="spectrum-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+        <div class="converge" aria-hidden="true">
+          <i></i><b>×</b><i></i>
+        </div>
+        <article>
+          <span>02</span>
+          <h3 class="translatable" data-key="acousticModelTitle">Acoustic Feature Ensemble</h3>
+          <p class="translatable" data-key="acousticModelDesc">The system examines pitch behavior, timing, formants, jitter, energy distribution, and other acoustic characteristics.</p>
+          <div class="feature-dots" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+        <div class="forensic-output">
+          <small class="translatable" data-key="combinedSignalLabel">COMBINED SIGNAL</small>
+          <strong class="translatable" data-key="forensicResultLabel">FORENSIC<br />RESULT</strong>
+          <span>↘</span>
+        </div>
+      </div>
+    </section>
 
-    <section class="history" id="history" aria-labelledby="history-title"><div class="history-head"><div><p class="eyebrow"><span></span> <span class="translatable" data-key="sessionLogEyebrow">SESSION LOG</span></p><h2 id="history-title" class="translatable" data-key="historyTitle">Previous investigations.</h2></div><button class="text-button translatable" id="clearHistory" data-key="clearHistoryBtn" type="button">Clear history</button></div><div class="history-list" id="historyList"><p class="history-empty translatable" data-key="historyEmpty">Your completed analyses will appear here.</p></div></section>
-    <aside class="trust-note"><span aria-hidden="true">!</span><p><strong class="translatable" data-key="trustTitle">Read this before you decide.</strong> <span class="translatable" data-key="trustText">VoiceGuard AI is a probabilistic detection tool, not proof of authenticity. Results can be affected by compression, background noise, recording quality, voice characteristics, and evolving synthesis techniques. It should not be the sole basis for high-stakes decisions.</span></p></aside>
+    <section class="history" id="history" aria-labelledby="history-title">
+      <div class="history-head">
+        <div>
+          <p class="eyebrow"><span></span> <span class="translatable" data-key="sessionLogEyebrow">SESSION LOG</span></p>
+          <h2 id="history-title" class="translatable" data-key="historyTitle">Previous investigations.</h2>
+        </div>
+        <button class="text-button translatable" id="clearHistory" data-key="clearHistoryBtn" type="button">Clear history</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <p class="history-empty translatable" data-key="historyEmpty">Your completed analyses will appear here.</p>
+      </div>
+    </section>
+
+    <aside class="trust-note">
+      <span class="trust-icon" aria-hidden="true">!</span>
+      <p><strong class="translatable" data-key="trustTitle">Read this before you decide.</strong> <span class="translatable" data-key="trustText">VoiceGuard AI is a probabilistic detection tool, not proof of authenticity. Results can be affected by compression, background noise, recording quality, voice characteristics, and evolving synthesis techniques. It should not be the sole basis for high-stakes decisions.</span></p>
+    </aside>
   </main>
-  <footer><div><strong>VoiceGuard AI</strong><span class="translatable" data-key="footerSubtitle">Audio Forensics</span></div><p class="translatable" data-key="footerHackathon">Built for SIH Hackathon</p><nav aria-label="Footer navigation"><a href="https://github.com/supriyakarmakarr/VoiceGuard-AI" target="_blank" rel="noopener noreferrer">GitHub</a><a href="#about" class="translatable" data-key="footerDocs">Documentation</a></nav></footer>
+
+  <footer>
+    <div>
+      <strong>VoiceGuard AI</strong>
+      <span class="translatable" data-key="footerSubtitle">Audio Forensics</span>
+    </div>
+    <p class="translatable" data-key="footerHackathon">Built for SIH Hackathon</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://github.com/supriyakarmakarr/VoiceGuard-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="#about" class="translatable" data-key="footerDocs">Documentation</a>
+    </nav>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
