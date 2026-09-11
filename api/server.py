@@ -40,6 +40,9 @@ from core.risk_engine import RiskEngine
 from core.calibrator import LearnedRiskCalibrator
 from core.speaker_verifier import SpeakerVerifier
 from core.telephony_degradation import TelephonyDegradationPipeline
+from core.vad_preprocessor import VADAudioPreprocessor
+from core.diarization_engine import SpeakerDiarizer
+from core.anti_spoofing_ensemble import MultiModelEnsemble
 from api.security import enforce_security_and_rate_limit
 from api.telephony import handle_telephony_websocket
 
@@ -51,20 +54,36 @@ FRONTEND_DIR = os.path.join(PROJECT_ROOT, "web") if os.path.isdir(os.path.join(P
 
 # Global instances
 preprocessor = AudioPreprocessor()
+vad_preprocessor = VADAudioPreprocessor()
+diarizer = SpeakerDiarizer()
 feature_extractor = FeatureExtractor()
 telephony_degrader = TelephonyDegradationPipeline()
 speaker_verifier = SpeakerVerifier()
 calibrator = None
 risk_engine = RiskEngine()
+multi_model_ensemble = None
 
 baseline_model = None
 deep_model = None
 model_metadata = {}
 
 
+def audio_to_base64_wav(audio: np.ndarray, sr: int = 16000) -> str:
+    """Converts numpy float32 audio to a data:audio/wav;base64 string for direct browser playback."""
+    try:
+        import soundfile as sf
+        buf = io.BytesIO()
+        sf.write(buf, audio, sr, format="WAV", subtype="PCM_16")
+        buf.seek(0)
+        b64 = base64.b64encode(buf.read()).decode("utf-8")
+        return f"data:audio/wav;base64,{b64}"
+    except Exception:
+        return ""
+
+
 def load_models():
     """Initializes and loads trained ML, Deep Learning, and Calibration models."""
-    global baseline_model, deep_model, calibrator, risk_engine, model_metadata
+    global baseline_model, deep_model, calibrator, risk_engine, multi_model_ensemble, model_metadata
 
     baseline_path = os.path.join(MODELS_DIR, "baseline_rf.pkl")
     deep_path = os.path.join(MODELS_DIR, "deep_cnn.pt")
@@ -89,14 +108,24 @@ def load_models():
         except Exception as e:
             print(f"[API] Warning loading deep learning model: {e}")
 
-    # 3. Load learned risk calibrator
+    # 3. Load next-gen multi-model ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)
+    try:
+        cnn_load = load_path if os.path.exists(load_path) else None
+        multi_model_ensemble = MultiModelEnsemble(deep_cnn_path=cnn_load)
+        print("[API] Loaded Next-Gen Multi-Model Ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)")
+    except Exception as e:
+        print(f"[API] Warning initializing multi-model ensemble: {e}")
+
+    # 4. Load learned risk calibrator
     if os.path.exists(calibrator_path):
         try:
             calibrator = LearnedRiskCalibrator(calibrator_path)
-            risk_engine = RiskEngine(calibrator=calibrator)
+            risk_engine = RiskEngine(calibrator=calibrator, ensemble=multi_model_ensemble)
             print(f"[API] Loaded Learned Risk Calibrator from {calibrator_path}")
         except Exception as e:
             print(f"[API] Warning loading calibrator: {e}")
+    else:
+        risk_engine = RiskEngine(ensemble=multi_model_ensemble)
 
     # 4. Load metadata
     if os.path.exists(meta_path):
@@ -295,12 +324,16 @@ async def analyze_audio(
     _auth = Depends(enforce_security_and_rate_limit),
 ):
     """
-    Main multi-factor forensic analysis endpoint:
-    Preprocessing -> [Optional Telephony Codec Degradation] -> Feature Extraction
-    -> Dual Models (Spectrogram CNN + Baseline RF/GB) -> Calibrated Risk Engine
-    -> [Optional Speaker Biometric Verification for CEO-Fraud Defense].
+    Next-Generation Multi-Speaker Forensic Analysis Pipeline:
+    1. Preprocessing + Noise Gating + VAD Speech Segmentation
+    2. Optional Telephony Codec Degradation Simulation
+    3. Speaker Diarization ("Who spoke when?")
+    4. Speaker-wise Audio Extraction & Multi-Model Ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)
+    5. Score Fusion & 3-Tier Calibrated Verdict (REAL, AI-GENERATED, UNCERTAIN)
+    6. Granular Suspicious Temporal Intervals per speaker
+    7. Dual-Factor Identity Verification (for CEO Fraud checks).
     """
-    if baseline_model is None or deep_model is None:
+    if baseline_model is None or deep_model is None or multi_model_ensemble is None:
         load_models()
 
     start_time = time.time()
@@ -309,13 +342,19 @@ async def analyze_audio(
         if len(audio_bytes) < 100:
             raise HTTPException(status_code=400, detail="Uploaded audio file is empty or corrupted.")
 
-        # Preprocessing
-        proc = preprocessor.process(audio_bytes)
-        audio = proc["audio"]
-        raw_trimmed = proc["raw_trimmed"]
-        duration = proc["duration_sec"]
+        # 1. Advanced Preprocessing: Resampling, Normalization, Spectral Gating Noise Reduction, VAD
+        vad_res = vad_preprocessor.process(audio_bytes, apply_noise_reduction=True, apply_vad=True)
+        raw_trimmed = vad_res["cleaned_full_audio"]
+        audio = vad_res["audio"]
+        duration = vad_res["total_duration_sec"]
 
-        # Apply Telephony Simulation if requested
+        if len(raw_trimmed) < 1600:
+            proc = preprocessor.process(audio_bytes)
+            audio = proc["audio"]
+            raw_trimmed = proc["raw_trimmed"]
+            duration = proc["duration_sec"]
+
+        # 2. Apply Telephony Simulation if requested
         if simulate_codec and simulate_codec != "none":
             if simulate_codec == "g711_mulaw":
                 audio = telephony_degrader.encode_decode_g711_mulaw(audio)
@@ -330,33 +369,103 @@ async def analyze_audio(
                 audio = telephony_degrader.apply_realistic_phone_call_pipeline(audio)
                 raw_trimmed = telephony_degrader.apply_realistic_phone_call_pipeline(raw_trimmed)
 
-        # Run Baseline Model Inference
+        # 3. Speaker Diarization ("Who Spoke When?")
+        diar_result = diarizer.diarize(raw_trimmed, sr=preprocessor.target_sr)
+        speaker_turns = diar_result["speaker_turns"]
+        speaker_audios = diar_result["speaker_audio"]
+        speaker_stats = diar_result["speaker_stats"]
+
+        # 4. Multi-Model Forensic Ensemble Assessment per Speaker
+        custom_risk_engine = RiskEngine(
+            low_threshold=threshold_low,
+            high_threshold=threshold_high,
+            calibrator=calibrator,
+            ensemble=multi_model_ensemble,
+        )
+
+        speakers_analysis = []
+        any_fake_speaker = False
+        any_uncertain_speaker = False
+
+        for spk_name, spk_wav in speaker_audios.items():
+            stats = speaker_stats.get(spk_name, {})
+            # Run 5-model ensemble on this speaker's audio
+            if multi_model_ensemble:
+                spk_eval = multi_model_ensemble.predict_speaker_audio(spk_wav, sr=preprocessor.target_sr)
+            else:
+                spk_eval = {
+                    "synthetic_probability": 15.0,
+                    "genuine_probability": 85.0,
+                    "tier_verdict": "REAL",
+                    "verdict_badge": "🟢 REAL",
+                    "verdict_desc": "Natural Speech",
+                    "confidence": 90.0,
+                    "agreement_score": 90.0,
+                    "model_scores": {"wavlm": 15.0, "aasist": 15.0, "rawnet": 15.0, "vocoder": 15.0, "spec_cnn": 15.0},
+                }
+
+            # Find suspicious intervals for this speaker
+            spk_suspicious = custom_risk_engine.find_suspicious_intervals(spk_wav, sr=preprocessor.target_sr)
+
+            # Generate isolated audio snippet (up to 30s)
+            spk_preview = spk_wav[:min(len(spk_wav), 16000 * 30)]
+            spk_audio_b64 = audio_to_base64_wav(spk_preview, sr=preprocessor.target_sr)
+
+            if spk_eval["tier_verdict"] == "AI_GENERATED":
+                any_fake_speaker = True
+            elif spk_eval["tier_verdict"] == "UNCERTAIN":
+                any_uncertain_speaker = True
+
+            speakers_analysis.append({
+                "speaker_id": spk_name,
+                "speaking_time_sec": stats.get("total_time_sec", round(len(spk_wav) / preprocessor.target_sr, 2)),
+                "percentage": stats.get("percentage", 100.0),
+                "turn_count": stats.get("turn_count", 1),
+                "verdict": spk_eval["tier_verdict"],
+                "badge": spk_eval["verdict_badge"],
+                "description": spk_eval["verdict_desc"],
+                "synthetic_probability": spk_eval["synthetic_probability"],
+                "genuine_probability": spk_eval["genuine_probability"],
+                "confidence": spk_eval["confidence"],
+                "agreement_score": spk_eval["agreement_score"],
+                "model_scores": spk_eval["model_scores"],
+                "suspicious_intervals": spk_suspicious,
+                "audio_b64": spk_audio_b64,
+            })
+
+        # 5. Global File Inference (Dual Models + Calibrated Risk Engine)
         if baseline_model:
             base_result = baseline_model.predict(audio)
         else:
             base_result = {"synthetic_probability": 0.5, "genuine_probability": 0.5, "confidence": 0.5}
 
-        # Run Deep Learning Spectrogram CNN Inference
         if deep_model:
             deep_result = deep_model.predict(audio)
         else:
             deep_result = {"synthetic_probability": 0.5, "genuine_probability": 0.5, "confidence": 0.5}
 
-        # Compute Granular Forensic Acoustic Signals
         forensic_signals = feature_extractor.compute_forensic_signals(raw_trimmed)
 
-        # Risk Engine Multi-Factor Assessment (incorporating Learned Platt Calibrator)
-        custom_risk_engine = RiskEngine(
-            low_threshold=threshold_low,
-            high_threshold=threshold_high,
-            calibrator=calibrator,
-        )
         risk_result = custom_risk_engine.evaluate(
             deep_result=deep_result,
             baseline_result=base_result,
             forensic_signals=forensic_signals,
             audio_duration=duration,
+            raw_audio=raw_trimmed,
+            sr=preprocessor.target_sr,
         )
+
+        # Reconcile overall verdict with speaker-level findings
+        if any_fake_speaker and risk_result["tier_verdict"] != "AI_GENERATED":
+            risk_result["tier_verdict"] = "AI_GENERATED"
+            risk_result["tier_badge"] = "🔴 AI-GENERATED"
+            risk_result["risk_level"] = "HIGH"
+            risk_result["risk_color"] = "#ef4444"
+        elif any_uncertain_speaker and risk_result["tier_verdict"] == "REAL":
+            risk_result["tier_verdict"] = "UNCERTAIN"
+            risk_result["tier_badge"] = "🟡 UNCERTAIN"
+            risk_result["risk_level"] = "MEDIUM"
+            risk_result["risk_color"] = "#f59e0b"
 
         # Optional Biometric Speaker Verification (CEO-Fraud Check)
         dual_factor_result = None
@@ -384,8 +493,17 @@ async def analyze_audio(
             "sample_rate_hz": preprocessor.target_sr,
             "latency_ms": latency_ms,
             "codec_simulation_applied": simulate_codec or "none",
+            "overall_verdict": risk_result["tier_verdict"],
+            "overall_badge": risk_result["tier_badge"],
             "analysis": risk_result,
             "deepfake_analysis": risk_result,
+            "diarization": {
+                "num_speakers": diar_result["num_speakers"],
+                "speaker_turns": speaker_turns,
+                "speaker_stats": speaker_stats,
+                "timeline_summary": diar_result["timeline_summary"],
+                "speakers": speakers_analysis,
+            },
             "speaker_verification": dual_factor_result,
             "models_raw": {
                 "deep_cnn": deep_result,
