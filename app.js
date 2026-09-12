@@ -466,7 +466,7 @@ function synthesizeDemoAudio(type) {
       previousAudioUrl = URL.createObjectURL(wavBlob);
       audioPreview.src = previousAudioUrl;
       audioPreview.hidden = false;
-    }).catch(() => {});
+    }).catch(() => { });
   } catch (e) {
     // Graceful fallback if Web Audio is restricted
   }
@@ -1166,16 +1166,16 @@ async function runAnalysis() {
                 const evidenceList = (df.indicators && df.indicators.length > 0)
                   ? df.indicators.map(ind => [ind.name, `${ind.score}% (${ind.severity})`, ind.severity])
                   : (sev === 'high' ? [
-                      ['Deep Learning Spectrogram CNN', `${df.forensic_metrics?.deep_prob ? Math.round(df.forensic_metrics.deep_prob * 100) : 93}%`, 'HIGH'],
-                      ['Neural Vocoder Fingerprint', 'Phase mismatch and HF shelf detected', 'HIGH'],
-                      ['Pitch & Prosodic Dynamics', `F0 std: ${df.forensic_metrics?.f0_std_hz || 8} Hz`, 'HIGH'],
-                      ['High-Frequency Spectral Cutoff', 'Bandwidth shelf detected', 'HIGH']
-                    ] : [
-                      ['Deep Learning Spectrogram CNN', `${df.forensic_metrics?.deep_prob ? Math.round(df.forensic_metrics.deep_prob * 100) : 5}%`, 'LOW'],
-                      ['Natural Micro-prosody', 'Organic pitch variance detected', 'LOW'],
-                      ['Formant Continuity', 'Natural vocal tract resonance', 'LOW'],
-                      ['Consistent Breath Noise', 'Organic acoustic floor (−34 dB)', 'LOW']
-                    ]);
+                    ['Deep Learning Spectrogram CNN', `${df.forensic_metrics?.deep_prob ? Math.round(df.forensic_metrics.deep_prob * 100) : 93}%`, 'HIGH'],
+                    ['Neural Vocoder Fingerprint', 'Phase mismatch and HF shelf detected', 'HIGH'],
+                    ['Pitch & Prosodic Dynamics', `F0 std: ${df.forensic_metrics?.f0_std_hz || 8} Hz`, 'HIGH'],
+                    ['High-Frequency Spectral Cutoff', 'Bandwidth shelf detected', 'HIGH']
+                  ] : [
+                    ['Deep Learning Spectrogram CNN', `${df.forensic_metrics?.deep_prob ? Math.round(df.forensic_metrics.deep_prob * 100) : 5}%`, 'LOW'],
+                    ['Natural Micro-prosody', 'Organic pitch variance detected', 'LOW'],
+                    ['Formant Continuity', 'Natural vocal tract resonance', 'LOW'],
+                    ['Consistent Breath Noise', 'Organic acoustic floor (−34 dB)', 'LOW']
+                  ]);
 
                 result = {
                   name: selectedAudio.name,
@@ -1301,10 +1301,10 @@ async function toggleRecording() {
     cancelAnimationFrame(animationFrame);
 
     if (scriptNode) {
-      try { scriptNode.disconnect(); } catch (e) {}
+      try { scriptNode.disconnect(); } catch (e) { }
     }
     if (stream) {
-      try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      try { stream.getTracks().forEach(t => t.stop()); } catch (e) { }
     }
 
     recordButton.classList.remove('is-recording');
@@ -1322,7 +1322,7 @@ async function toggleRecording() {
     // Convert all collected PCM chunks into a pristine 16-bit uncompressed WAV Blob
     const fullWavBlob = pcmToWavBlob(livePcmChunks, sampleRate);
     if (audioContext && audioContext.state !== 'closed') {
-      try { await audioContext.close(); } catch (e) {}
+      try { await audioContext.close(); } catch (e) { }
     }
 
     if (previousAudioUrl) {
