@@ -1,16 +1,21 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="VoiceGuard AI demo: an audio-forensics workspace for investigating synthetic speech." />
+  <meta name="description"
+    content="VoiceGuard AI demo: an audio-forensics workspace for investigating synthetic speech." />
   <meta name="theme-color" content="#fcfaf5" />
   <title>VoiceGuard AI — Audio Forensics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="VoiceGuard AI home">
@@ -35,17 +40,34 @@
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span></span> <span class="translatable" data-key="heroEyebrow">SYNTHETIC SPEECH INVESTIGATION</span></p>
-        <h1 id="hero-title"><span class="glitch-text" data-text="Know if a voice">Know if a voice</span><br /><span class="headline-mark"><span class="translatable" data-key="heroMark">is real.</span><svg class="headline-underline" viewBox="0 0 210 14" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 9.5C40 3 96 2 122 7.5C150 13 178 6 208 4" /></svg></span></h1>
-        <p class="hero-text translatable" data-key="heroText">VoiceGuard AI analyzes acoustic patterns, spectral behavior, and vocal characteristics to identify signs of synthetic speech.</p>
+        <p class="eyebrow"><span></span> <span class="translatable" data-key="heroEyebrow">SYNTHETIC SPEECH
+            INVESTIGATION</span></p>
+        <h1 id="hero-title"><span class="glitch-text" data-text="Know if a voice">Know if a voice</span><br /><span
+            class="headline-mark"><span class="translatable" data-key="heroMark">is real.</span><svg
+              class="headline-underline" viewBox="0 0 210 14" preserveAspectRatio="none" aria-hidden="true">
+              <path pathLength="1" d="M2 9.5C40 3 96 2 122 7.5C150 13 178 6 208 4" />
+            </svg></span></h1>
+        <p class="hero-text translatable" data-key="heroText">VoiceGuard AI analyzes acoustic patterns, spectral
+          behavior, and vocal characteristics to identify signs of synthetic speech.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#analyze"><span class="translatable" data-key="analyzeBtn">Analyze Audio</span> <span aria-hidden="true">↘</span></a>
-          <button class="btn btn-secondary" id="heroSample" type="button"><span class="translatable" data-key="trySampleBtn">Try a Sample</span> <span aria-hidden="true">→</span></button>
+          <a class="btn btn-primary" href="#analyze"><span class="translatable" data-key="analyzeBtn">Analyze
+              Audio</span> <span aria-hidden="true">↘</span></a>
+          <button class="btn btn-secondary" id="heroSample" type="button"><span class="translatable"
+              data-key="trySampleBtn">Try a Sample</span> <span aria-hidden="true">→</span></button>
         </div>
         <dl class="hero-stats">
-          <div><dt class="translatable" data-key="statSignals">Signals modeled</dt><dd>5</dd></div>
-          <div><dt class="translatable" data-key="statWindow">Analysis window</dt><dd>20 ms</dd></div>
-          <div><dt class="translatable" data-key="statFormats">Formats read</dt><dd>6</dd></div>
+          <div>
+            <dt class="translatable" data-key="statSignals">Signals modeled</dt>
+            <dd>5</dd>
+          </div>
+          <div>
+            <dt class="translatable" data-key="statWindow">Analysis window</dt>
+            <dd>20 ms</dd>
+          </div>
+          <div>
+            <dt class="translatable" data-key="statFormats">Formats read</dt>
+            <dd>6</dd>
+          </div>
         </dl>
       </div>
 
@@ -61,37 +83,77 @@
           <svg class="signal-trace" viewBox="0 0 760 338" role="img" aria-label="A waveform being scanned">
             <defs>
               <linearGradient id="waveColor" x1="0" x2="1">
-                <stop class="wave-start" offset="0" stop-color="var(--accent, #e8850c)"/>
-                <stop class="wave-end" offset="1" stop-color="var(--coral, #f87171)"/>
+                <stop class="wave-start" offset="0" stop-color="var(--accent, #e8850c)" />
+                <stop class="wave-end" offset="1" stop-color="var(--coral, #f87171)" />
               </linearGradient>
               <linearGradient id="formantColor" x1="0" x2="1">
-                <stop class="formant-start" offset="0" stop-color="var(--blue, #3b82f6)"/>
-                <stop class="formant-end" offset="1" stop-color="var(--violet, #8b5cf6)"/>
+                <stop class="formant-start" offset="0" stop-color="var(--blue, #3b82f6)" />
+                <stop class="formant-end" offset="1" stop-color="var(--violet, #8b5cf6)" />
               </linearGradient>
               <linearGradient id="scannerBeam" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#e8850c" stop-opacity="0.1"/>
-                <stop offset="50%" stop-color="#e8850c" stop-opacity="0.9"/>
-                <stop offset="100%" stop-color="#f87171" stop-opacity="0.2"/>
+                <stop offset="0%" stop-color="#e8850c" stop-opacity="0.1" />
+                <stop offset="50%" stop-color="#e8850c" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#f87171" stop-opacity="0.2" />
               </linearGradient>
               <clipPath id="scanClip">
                 <rect class="scan-reveal" x="0" y="0" width="0" height="338" />
               </clipPath>
             </defs>
             <g class="spectrogram" clip-path="url(#scanClip)">
-              <rect x="22" y="78" width="14" height="126"/><rect x="45" y="129" width="14" height="75"/><rect x="68" y="102" width="14" height="102"/><rect x="91" y="154" width="14" height="50"/><rect x="114" y="66" width="14" height="138"/><rect x="137" y="111" width="14" height="93"/><rect x="160" y="141" width="14" height="63"/><rect x="183" y="52" width="14" height="152"/><rect x="206" y="118" width="14" height="86"/><rect x="229" y="79" width="14" height="125"/><rect x="252" y="145" width="14" height="59"/><rect x="275" y="94" width="14" height="110"/><rect x="298" y="125" width="14" height="79"/><rect x="321" y="62" width="14" height="142"/><rect x="344" y="152" width="14" height="52"/><rect x="367" y="107" width="14" height="97"/><rect x="390" y="133" width="14" height="71"/><rect x="413" y="85" width="14" height="119"/><rect x="436" y="151" width="14" height="53"/><rect x="459" y="69" width="14" height="135"/><rect x="482" y="116" width="14" height="88"/><rect x="505" y="141" width="14" height="63"/><rect x="528" y="96" width="14" height="108"/><rect x="551" y="132" width="14" height="72"/><rect x="574" y="73" width="14" height="131"/><rect x="597" y="124" width="14" height="80"/><rect x="620" y="102" width="14" height="102"/><rect x="643" y="151" width="14" height="53"/><rect x="666" y="88" width="14" height="116"/><rect x="689" y="128" width="14" height="76"/><rect x="712" y="105" width="14" height="99"/>
+              <rect x="22" y="78" width="14" height="126" />
+              <rect x="45" y="129" width="14" height="75" />
+              <rect x="68" y="102" width="14" height="102" />
+              <rect x="91" y="154" width="14" height="50" />
+              <rect x="114" y="66" width="14" height="138" />
+              <rect x="137" y="111" width="14" height="93" />
+              <rect x="160" y="141" width="14" height="63" />
+              <rect x="183" y="52" width="14" height="152" />
+              <rect x="206" y="118" width="14" height="86" />
+              <rect x="229" y="79" width="14" height="125" />
+              <rect x="252" y="145" width="14" height="59" />
+              <rect x="275" y="94" width="14" height="110" />
+              <rect x="298" y="125" width="14" height="79" />
+              <rect x="321" y="62" width="14" height="142" />
+              <rect x="344" y="152" width="14" height="52" />
+              <rect x="367" y="107" width="14" height="97" />
+              <rect x="390" y="133" width="14" height="71" />
+              <rect x="413" y="85" width="14" height="119" />
+              <rect x="436" y="151" width="14" height="53" />
+              <rect x="459" y="69" width="14" height="135" />
+              <rect x="482" y="116" width="14" height="88" />
+              <rect x="505" y="141" width="14" height="63" />
+              <rect x="528" y="96" width="14" height="108" />
+              <rect x="551" y="132" width="14" height="72" />
+              <rect x="574" y="73" width="14" height="131" />
+              <rect x="597" y="124" width="14" height="80" />
+              <rect x="620" y="102" width="14" height="102" />
+              <rect x="643" y="151" width="14" height="53" />
+              <rect x="666" y="88" width="14" height="116" />
+              <rect x="689" y="128" width="14" height="76" />
+              <rect x="712" y="105" width="14" height="99" />
             </g>
             <g class="freq-markers">
-              <g class="freq-marker fm-1"><line x1="163" y1="30" x2="163" y2="308"/><text x="163" y="20">210 Hz</text></g>
-              <g class="freq-marker fm-2"><line x1="392" y1="30" x2="392" y2="308"/><text x="392" y="20">1.4 kHz</text></g>
-              <g class="freq-marker fm-3"><line x1="622" y1="30" x2="622" y2="308"/><text x="622" y="20">6.8 kHz</text></g>
+              <g class="freq-marker fm-1">
+                <line x1="163" y1="30" x2="163" y2="308" /><text x="163" y="20">210 Hz</text>
+              </g>
+              <g class="freq-marker fm-2">
+                <line x1="392" y1="30" x2="392" y2="308" /><text x="392" y="20">1.4 kHz</text>
+              </g>
+              <g class="freq-marker fm-3">
+                <line x1="622" y1="30" x2="622" y2="308" /><text x="622" y="20">6.8 kHz</text>
+              </g>
             </g>
-            <path class="formant-shadow" d="M0,232 C34,214 66,250 96,222 S158,178 188,224 S250,266 282,218 S344,168 376,222 S438,268 470,216 S532,172 564,222 S626,260 658,214 S716,180 760,220" />
-            <path class="formant-path" pathLength="1" d="M0,232 C34,214 66,250 96,222 S158,178 188,224 S250,266 282,218 S344,168 376,222 S438,268 470,216 S532,172 564,222 S626,260 658,214 S716,180 760,220" />
-            <path class="wave-shadow" d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
-            <path class="wave-path" pathLength="1" d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
-            <line class="scanner" x1="0" y1="22" x2="0" y2="316"/>
-            <circle class="scan-dot-ring" cx="0" cy="178" r="14"/>
-            <circle class="scan-dot" cx="0" cy="178" r="6"/>
+            <path class="formant-shadow"
+              d="M0,232 C34,214 66,250 96,222 S158,178 188,224 S250,266 282,218 S344,168 376,222 S438,268 470,216 S532,172 564,222 S626,260 658,214 S716,180 760,220" />
+            <path class="formant-path" pathLength="1"
+              d="M0,232 C34,214 66,250 96,222 S158,178 188,224 S250,266 282,218 S344,168 376,222 S438,268 470,216 S532,172 564,222 S626,260 658,214 S716,180 760,220" />
+            <path class="wave-shadow"
+              d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
+            <path class="wave-path" pathLength="1"
+              d="M0,178 C30,178 35,128 62,180 S100,238 132,168 S169,81 198,178 S240,278 272,180 S313,88 348,178 S389,240 422,160 S461,105 490,178 S523,247 555,178 S588,93 618,179 S654,222 681,167 S719,126 760,175" />
+            <line class="scanner" x1="0" y1="22" x2="0" y2="316" />
+            <circle class="scan-dot-ring" cx="0" cy="178" r="14" />
+            <circle class="scan-dot" cx="0" cy="178" r="6" />
           </svg>
           <div class="signal-note note-one">FORMANT<br /><b>3.8 kHz</b></div>
           <div class="signal-note note-two">PITCH TRACE<br /><b>204 Hz</b></div>
@@ -107,15 +169,19 @@
 
     <section class="workspace" id="analyze" aria-labelledby="analyze-title">
       <div class="section-intro">
-        <p class="eyebrow"><span></span> <span class="translatable" data-key="workspaceEyebrow">WORKSPACE / 01</span></p>
+        <p class="eyebrow"><span></span> <span class="translatable" data-key="workspaceEyebrow">WORKSPACE / 01</span>
+        </p>
         <h2 id="analyze-title" class="translatable" data-key="workspaceTitle">Bring a voice into focus.</h2>
-        <p class="translatable" data-key="workspaceDesc">Load a recording, select a controlled sample, or capture a short clip live.</p>
+        <p class="translatable" data-key="workspaceDesc">Load a recording, select a controlled sample, or capture a
+          short clip live.</p>
       </div>
 
       <div class="instrument-workbench">
         <div class="input-column">
-          <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Drop an audio file or browse from device" aria-controls="fileMeta">
-            <input id="audioInput" type="file" accept="audio/mpeg,audio/wav,audio/x-m4a,audio/flac,audio/ogg,audio/webm,audio/aac" hidden />
+          <div class="drop-zone" id="dropZone" role="button" tabindex="0"
+            aria-label="Drop an audio file or browse from device" aria-controls="fileMeta">
+            <input id="audioInput" type="file"
+              accept="audio/mpeg,audio/wav,audio/x-m4a,audio/flac,audio/ogg,audio/webm,audio/aac" hidden />
             <svg class="drop-icon" viewBox="0 0 44 38" width="44" height="38" aria-hidden="true">
               <rect x="3" y="13" width="4" height="15" rx="2" />
               <rect x="11" y="7" width="4" height="25" rx="2" />
@@ -154,11 +220,13 @@
 
           <div class="record-row" id="live-detect">
             <span class="or-label translatable" data-key="orLabel">OR</span>
-            <button class="record-button" id="recordButton" type="button" aria-label="Start recording" aria-pressed="false">
+            <button class="record-button" id="recordButton" type="button" aria-label="Start recording"
+              aria-pressed="false">
               <span class="mic-icon" aria-hidden="true">●</span>
             </button>
             <div>
-              <strong id="recordLabel"><span class="rec-dot" aria-hidden="true"></span><span id="recordLabelText" class="translatable" data-key="recordPrompt">Record a sample</span></strong>
+              <strong id="recordLabel"><span class="rec-dot" aria-hidden="true"></span><span id="recordLabelText"
+                  class="translatable" data-key="recordPrompt">Record a sample</span></strong>
               <p id="recordDetail" class="translatable" data-key="recordDesc">Use your microphone for a short clip.</p>
             </div>
             <time id="recordTimer">00:00.00</time>
@@ -176,7 +244,7 @@
             <span id="readout-title" class="translatable" data-key="readoutTitle">FORENSIC READOUT</span>
             <span id="readoutStatus" class="translatable" data-key="statusAwaiting">AWAITING INPUT</span>
           </div>
-          
+
           <div class="empty-readout" id="emptyReadout">
             <div class="reticle" aria-hidden="true">
               <span class="radar-beam"></span>
@@ -206,27 +274,44 @@
             <div class="score-and-meta">
               <div class="gauge-wrap">
                 <svg class="gauge-svg" viewBox="0 0 160 160" aria-label="Risk score gauge">
-                  <circle class="gauge-bg" cx="80" cy="80" r="63"/>
-                  <circle class="gauge-value" id="gaugeValue" cx="80" cy="80" r="63"/>
+                  <circle class="gauge-bg" cx="80" cy="80" r="63" />
+                  <circle class="gauge-value" id="gaugeValue" cx="80" cy="80" r="63" />
                   <text x="80" y="74" id="gaugeScore">78</text>
                   <text x="80" y="96">/ 100</text>
                 </svg>
                 <span class="translatable" data-key="riskScoreLabel">RISK SCORE</span>
               </div>
               <dl class="tech-meta">
-                <div><dt class="translatable" data-key="dtConfidence">Confidence</dt><dd id="confidence">94%</dd></div>
-                <div><dt class="translatable" data-key="dtAgreement">Model agreement</dt><dd id="agreement">87%</dd></div>
-                <div><dt class="translatable" data-key="dtDuration">Audio duration</dt><dd id="duration">00:18.42</dd></div>
-                <div><dt class="translatable" data-key="dtRate">Sample rate</dt><dd id="rate">48 kHz</dd></div>
-                <div><dt class="translatable" data-key="dtRange">Frequency range</dt><dd id="range">0–24 kHz</dd></div>
+                <div>
+                  <dt class="translatable" data-key="dtConfidence">Confidence</dt>
+                  <dd id="confidence">94%</dd>
+                </div>
+                <div>
+                  <dt class="translatable" data-key="dtAgreement">Model agreement</dt>
+                  <dd id="agreement">87%</dd>
+                </div>
+                <div>
+                  <dt class="translatable" data-key="dtDuration">Audio duration</dt>
+                  <dd id="duration">00:18.42</dd>
+                </div>
+                <div>
+                  <dt class="translatable" data-key="dtRate">Sample rate</dt>
+                  <dd id="rate">48 kHz</dd>
+                </div>
+                <div>
+                  <dt class="translatable" data-key="dtRange">Frequency range</dt>
+                  <dd id="range">0–24 kHz</dd>
+                </div>
               </dl>
             </div>
             <details class="evidence" open>
-              <summary><span class="translatable" data-key="evidenceLabel">Forensic Evidence</span> <span class="evidence-toggle" aria-hidden="true">+</span></summary>
+              <summary><span class="translatable" data-key="evidenceLabel">Forensic Evidence</span> <span
+                  class="evidence-toggle" aria-hidden="true">+</span></summary>
               <div id="evidenceRows"></div>
             </details>
             <button class="btn btn-secondary report-button" id="reportButton" type="button" disabled>
-              <span class="translatable" data-key="downloadReportBtn">Download Report</span> <span aria-hidden="true">↓</span>
+              <span class="translatable" data-key="downloadReportBtn">Download Report</span> <span
+                aria-hidden="true">↓</span>
             </button>
           </div>
         </aside>
@@ -242,7 +327,8 @@
         <article>
           <span>01</span>
           <h3 class="translatable" data-key="specModelTitle">Spectrogram Model</h3>
-          <p class="translatable" data-key="specModelDesc">The system studies frequency patterns and spectral structures that can reveal artifacts commonly associated with synthetic speech.</p>
+          <p class="translatable" data-key="specModelDesc">The system studies frequency patterns and spectral structures
+            that can reveal artifacts commonly associated with synthetic speech.</p>
           <div class="spectrum-bars" aria-hidden="true">
             <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
           </div>
@@ -253,7 +339,8 @@
         <article>
           <span>02</span>
           <h3 class="translatable" data-key="acousticModelTitle">Acoustic Feature Ensemble</h3>
-          <p class="translatable" data-key="acousticModelDesc">The system examines pitch behavior, timing, formants, jitter, energy distribution, and other acoustic characteristics.</p>
+          <p class="translatable" data-key="acousticModelDesc">The system examines pitch behavior, timing, formants,
+            jitter, energy distribution, and other acoustic characteristics.</p>
           <div class="feature-dots" aria-hidden="true">
             <span></span><span></span><span></span><span></span>
           </div>
@@ -269,10 +356,12 @@
     <section class="history" id="history" aria-labelledby="history-title">
       <div class="history-head">
         <div>
-          <p class="eyebrow"><span></span> <span class="translatable" data-key="sessionLogEyebrow">SESSION LOG</span></p>
+          <p class="eyebrow"><span></span> <span class="translatable" data-key="sessionLogEyebrow">SESSION LOG</span>
+          </p>
           <h2 id="history-title" class="translatable" data-key="historyTitle">Previous investigations.</h2>
         </div>
-        <button class="text-button translatable" id="clearHistory" data-key="clearHistoryBtn" type="button">Clear history</button>
+        <button class="text-button translatable" id="clearHistory" data-key="clearHistoryBtn" type="button">Clear
+          history</button>
       </div>
       <div class="history-list" id="historyList">
         <p class="history-empty translatable" data-key="historyEmpty">Your completed analyses will appear here.</p>
@@ -281,7 +370,11 @@
 
     <aside class="trust-note">
       <span class="trust-icon" aria-hidden="true">!</span>
-      <p><strong class="translatable" data-key="trustTitle">Read this before you decide.</strong> <span class="translatable" data-key="trustText">VoiceGuard AI is a probabilistic detection tool, not proof of authenticity. Results can be affected by compression, background noise, recording quality, voice characteristics, and evolving synthesis techniques. It should not be the sole basis for high-stakes decisions.</span></p>
+      <p><strong class="translatable" data-key="trustTitle">Read this before you decide.</strong> <span
+          class="translatable" data-key="trustText">VoiceGuard AI is a probabilistic detection tool, not proof of
+          authenticity. Results can be affected by compression, background noise, recording quality, voice
+          characteristics, and evolving synthesis techniques. It should not be the sole basis for high-stakes
+          decisions.</span></p>
     </aside>
   </main>
 
@@ -299,4 +392,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>
