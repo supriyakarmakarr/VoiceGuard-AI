@@ -2,10 +2,10 @@ r"""
 VoiceGuard AI - Main Entry Point
 SIH26104: Neural Voice Deepfake & Clone Forensic System
 
-Can be run from anywhere:
-    python main.py
-or:
-    python C:/Users/SUPRIYA/.gemini/antigravity/scratch/sih26104-voiceguard-ai/main.py
+[LATEST UPDATES]:
+- core/forensic_pipeline.py: Fixed "Insufficient evidence" on live voice & added multilingual detection
+- api/server.py: Added language parameter support to analyze and job endpoints
+- script.js: Added dynamic audio sample rate header & language forwarding
 """
 
 import os
