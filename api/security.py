@@ -1,117 +1,55 @@
-"""
-VoiceGuard AI - API Authentication & Sliding Window Rate Limiter
-Secures /api/analyze and streaming endpoints for enterprise production:
-1. Header-based API Key validation (X-API-Key or Bearer token)
-2. In-Memory Sliding Window Rate Limiter (60 req/min with burst handling)
-3. Standard Rate Limit response headers (X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After)
-4. Dev/Demo bypass for local frontend and test clients
-"""
-
+"""Local-first authentication and bounded per-IP rate limiting."""
+import hmac
 import os
 import time
-from collections import defaultdict, deque
-from fastapi import Request, HTTPException, Security, status
-from fastapi.security import APIKeyHeader
-from typing import Tuple, Optional
+import threading
+from collections import OrderedDict, deque
+from fastapi import Request, HTTPException
 
-API_KEY_HEADER_NAME = "X-API-Key"
-api_key_header = APIKeyHeader(name=API_KEY_HEADER_NAME, auto_error=False)
-
-# Configurable settings
-CONFIGURED_API_KEY = os.getenv("VOICEGUARD_API_KEY", "voiceguard-enterprise-demo-key-2026")
-DEFAULT_RATE_LIMIT_PER_MINUTE = int(os.getenv("VOICEGUARD_RATE_LIMIT", "60"))
-DEMO_MODE = os.getenv("API_DEMO_MODE", "true").lower() in ("true", "1", "yes")
-
+CONFIGURED_API_KEY = os.getenv('VOICEGUARD_API_KEY', '')
+DEFAULT_RATE_LIMIT_PER_MINUTE = int(os.getenv('VOICEGUARD_RATE_LIMIT', '120'))
+DEMO_MODE = os.getenv('API_DEMO_MODE', 'false').lower() == 'true'
 
 class SlidingWindowRateLimiter:
-    """
-    Sliding window in-memory rate limiter per client key / IP.
-    """
-
-    def __init__(self, requests_per_minute: int = DEFAULT_RATE_LIMIT_PER_MINUTE):
+    def __init__(self, requests_per_minute=DEFAULT_RATE_LIMIT_PER_MINUTE):
         self.limit = requests_per_minute
-        self.window_seconds = 60.0
-        self.records = defaultdict(deque)
+        self.records = OrderedDict()
+        self.lock = threading.Lock()
 
-    def is_allowed(self, client_id: str) -> Tuple[bool, int, int]:
-        """
-        Returns (is_allowed: bool, remaining_requests: int, retry_after_sec: int).
-        """
-        now = time.time()
-        window_start = now - self.window_seconds
-        timestamps = self.records[client_id]
-
-        # Purge timestamps outside the 60s sliding window
-        while timestamps and timestamps[0] < window_start:
-            timestamps.popleft()
-
-        curr_count = len(timestamps)
-        if curr_count >= self.limit:
-            oldest = timestamps[0]
-            retry_after = max(1, int(oldest + self.window_seconds - now))
-            return False, 0, retry_after
-
-        # Record this request
-        timestamps.append(now)
-        remaining = self.limit - (curr_count + 1)
-        return True, remaining, 0
-
+    def is_allowed(self, client_id):
+        with self.lock:
+            now = time.monotonic()
+            if client_id not in self.records and len(self.records) >= 4096:
+                self.records.popitem(last=False)
+            queue = self.records.setdefault(client_id, deque())
+            self.records.move_to_end(client_id)
+            while queue and queue[0] < now - 60:
+                queue.popleft()
+            if len(queue) >= self.limit:
+                return False, 0, max(1, int(queue[0] + 61 - now))
+            queue.append(now)
+            return True, self.limit - len(queue), 0
 
 rate_limiter = SlidingWindowRateLimiter()
 
-
-def get_client_identifier(request: Request) -> str:
-    """Extracts client IP or API key for rate limiting bucket."""
-    api_key = request.headers.get(API_KEY_HEADER_NAME)
-    if api_key:
-        return f"key:{api_key}"
-    # Fallback to client IP
-    client_ip = request.client.host if request.client else "127.0.0.1"
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
-    return f"ip:{client_ip}"
-
+def get_client_identifier(request):
+    # Never trust a client-supplied forwarding header or varying API key as a rate bucket.
+    return request.client.host if request.client else 'unknown'
 
 async def enforce_security_and_rate_limit(request: Request):
-    """
-    FastAPI dependency that enforces API key authentication and sliding window rate limiting.
-    Allows demo calls if DEMO_MODE is true or from trusted local origins, but still rate limits.
-    """
-    client_id = get_client_identifier(request)
-
-    # 1. Rate limiting check
-    allowed, remaining, retry_after = rate_limiter.is_allowed(client_id)
+    client = get_client_identifier(request)
+    allowed, remaining, retry = rate_limiter.is_allowed(client)
     if not allowed:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Rate limit exceeded ({DEFAULT_RATE_LIMIT_PER_MINUTE} req/min). Retry in {retry_after} seconds.",
-            headers={
-                "Retry-After": str(retry_after),
-                "X-RateLimit-Limit": str(DEFAULT_RATE_LIMIT_PER_MINUTE),
-                "X-RateLimit-Remaining": "0",
-            },
-        )
-
-    # Attach remaining requests to request state for response header injection
+        raise HTTPException(429, 'Too many requests. Retry shortly.', headers={'Retry-After': str(retry)})
     request.state.rate_limit_remaining = remaining
-    request.state.rate_limit_limit = DEFAULT_RATE_LIMIT_PER_MINUTE
-
-    # 2. Authentication check
-    api_key = request.headers.get(API_KEY_HEADER_NAME)
-    if api_key:
-        if api_key != CONFIGURED_API_KEY and not DEMO_MODE:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid X-API-Key credentials.",
-            )
-        return api_key
-
-    # If in DEMO_MODE or local call, allow without header
-    if DEMO_MODE:
-        return "demo-session"
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Missing required authentication header: X-API-Key",
-    )
+    request.state.rate_limit_limit = rate_limiter.limit
+    supplied = request.headers.get('x-api-key', '')
+    if not supplied and request.headers.get('authorization', '').startswith('Bearer '):
+        supplied = request.headers['authorization'][7:]
+    if CONFIGURED_API_KEY:
+        if not hmac.compare_digest(supplied, CONFIGURED_API_KEY):
+            raise HTTPException(401, 'Enter a valid API key in connection settings.')
+        return 'authenticated'
+    if client in ('127.0.0.1', '::1', 'testclient') or DEMO_MODE:
+        return 'local' if not DEMO_MODE else 'public-demo'
+    raise HTTPException(401, 'Remote access requires VOICEGUARD_API_KEY or explicit public demo mode.')
