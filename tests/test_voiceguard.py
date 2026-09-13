@@ -144,9 +144,10 @@ class TestSpeakerVerifier(unittest.TestCase):
     def test_enrollment_and_verification(self):
         self.assertIn("test_exec", self.verifier.enrolled_profiles)
 
-        # Same audio verified against enrolled profile -> MATCH
+        # Same audio matches acoustic threshold; this does not verify identity.
         match_res = self.verifier.verify_claimed_identity(self.speech_a, "test_exec")
-        self.assertTrue(match_res["verified"])
+        self.assertFalse(match_res["verified"])
+        self.assertTrue(match_res["acoustic_threshold_match"])
         self.assertGreaterEqual(match_res["similarity_score"], 0.78)
 
         # Different audio -> LOWER similarity
@@ -154,14 +155,15 @@ class TestSpeakerVerifier(unittest.TestCase):
         self.assertLess(mismatch_res["similarity_score"], match_res["similarity_score"])
 
     def test_dual_factor_matrix(self):
-        # Case 1: Genuine + Matched -> Authorized
+        # Acoustic matches must still require independent verification.
         deepfake_safe = {"synthetic_probability": 0.08, "risk_score": 8.0}
         res_auth = self.verifier.evaluate_dual_factor_transaction(
             deepfake_risk_result=deepfake_safe,
             claimed_speaker_id="test_exec",
             audio_input=self.speech_a,
         )
-        self.assertEqual(res_auth["transaction_decision"], "AUTHORIZED_DUAL_FACTOR")
+        self.assertEqual(res_auth["transaction_decision"], "SECONDARY_VERIFICATION_REQUIRED")
+        self.assertFalse(res_auth["authorized"])
 
         # Case 2: Synthetic clone targeting CEO -> Blocked
         deepfake_danger = {"synthetic_probability": 0.92, "risk_score": 92.0}
@@ -170,7 +172,8 @@ class TestSpeakerVerifier(unittest.TestCase):
             claimed_speaker_id="test_exec",
             audio_input=self.speech_a,
         )
-        self.assertEqual(res_blocked["transaction_decision"], "BLOCKED_AI_IMPERSONATION")
+        self.assertEqual(res_blocked["transaction_decision"], "SECONDARY_VERIFICATION_REQUIRED")
+        self.assertFalse(res_blocked["authorized"])
 
 
 class TestTelephonyDegradation(unittest.TestCase):
@@ -194,21 +197,27 @@ class TestTelephonyDegradation(unittest.TestCase):
 
 
 class TestFastAPIServer(unittest.TestCase):
-    def setUp(self):
-        self.client = TestClient(app)
+    @classmethod
+    def setUpClass(cls):
+        cls.client = TestClient(app)
+        cls.client.__enter__()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.__exit__(None, None, None)
 
     def test_health_endpoint(self):
         response = self.client.get("/api/health")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "healthy")
-        self.assertEqual(data["version"], "2.0.0")
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["version"], "3.0.0")
 
     def test_models_endpoint(self):
         response = self.client.get("/api/models")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("enrolled_profiles", data)
+        self.assertIn("capabilities", data)
 
     def test_sample_audios_endpoint(self):
         response = self.client.get("/api/sample-audios")
