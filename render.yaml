@@ -1,11 +1,17 @@
 services:
   - type: web
     name: voiceguard-ai
-    env: python
+    runtime: python
     region: oregon
     plan: free
-    buildCommand: "pip install -r requirements.txt && python scripts/train_models.py"
-    startCommand: "python -m uvicorn api.server:app --host 0.0.0.0 --port $PORT"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m uvicorn api.server:app --host 0.0.0.0 --port $PORT --workers 1"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.12.10
+      - key: VOICEGUARD_API_KEY
+        generateValue: true
+      - key: API_DEMO_MODE
+        value: "false"
+# Configure an adequate memory tier for PyTorch before deployment.
+# Build never retrains or overwrites the supplied checkpoints.
