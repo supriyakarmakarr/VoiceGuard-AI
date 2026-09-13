@@ -67,3 +67,8 @@ venv.bak/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Explicitly enrolled acoustic profiles and local model configuration
+models/speaker_profiles/
+.env.*
+!.env.example

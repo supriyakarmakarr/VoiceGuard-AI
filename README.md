@@ -1,393 +1,132 @@
-<div align="center">
+# VoiceGuard AI — Voice Forensics Lab
 
-<!-- Animated Wave Header Banner -->
-<img
-  src="https://capsule-render.vercel.app/api?type=waving&color=0:00c9ff,100:9b5de5&height=260&section=header&text=VoiceGuard%20AI&fontSize=60&fontColor=ffffff&fontAlignY=38&desc=Real-Time%20Neural%20Voice%20Deepfake%20Forensic%20Defense%20Platform&descFontSize=17&descAlignY=58"
-  width="100%"
-  alt="VoiceGuard AI Header"
-/>
+A light, interactive audio-forensics workspace built on the existing FastAPI, ResNet-SE CNN, acoustic classifier and DSP code. Upload a recording or capture a microphone session, inspect speaker activity, review model evidence and download a printable forensic report.
 
-<!-- Subtitle -->
-<h2>
-  🛡️ <span>Detect. Explain. Defend. — Real-Time Voice Deepfake Forensics</span> 🛡️
-</h2>
+## Run locally
 
-<!-- Animated Typing Subtitle -->
-<a href="https://git.io/typing-svg">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&amp;weight=600&amp;size=18&amp;duration=3000&amp;pause=1000&amp;color=00F5D4&amp;center=true&amp;vCenter=true&amp;width=700&amp;lines=Dual+AI+Detection+Engine%3A+ResNet-SE+CNN+%2B+ML+Ensemble;Sub-20ms+Real-Time+Inference+Latency;Live+Microphone+Interception+%26+Streaming+Analysis;Forensic-Grade+Explainability+for+Every+Verdict;Multilingual+Advisory%3A+English+%7C+%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80+%7C+%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE" alt="Typing SVG" />
-</a>
+Use **Python 3.12**, then run these commands from the project directory:
 
-<sub><b>Smart India Hackathon (SIH) — Problem Statement ID: SIH26104</b></sub>
-
-<br/><br/>
-
-<!-- Badges -->
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-ResNet--SE%20CNN-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-High%20Performance%20REST-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Ensemble%20ML-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![Librosa](https://img.shields.io/badge/DSP-Librosa%20%26%20TorchAudio-4A90E2?style=for-the-badge)](https://librosa.org/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
-<br/>
-
-<!-- Live Status Badges -->
-<img src="https://img.shields.io/badge/Latency-~18.4ms-blue?style=flat-square" alt="Latency" />
-<img src="https://img.shields.io/badge/Languages-EN%20%7C%20HI%20%7C%20BN-orange?style=flat-square" alt="Languages" />
-<img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status" />
-
-<br/><br/>
-
-[🌟 Key Capabilities](#-key-capabilities) •
-[🏗️ Architecture](#-system-architecture) •
-[🧠 How It Works](#-how-it-works-internal-pipeline) •
-[🚀 Quick Start](#-quick-start-guide) •
-[📡 API Reference](#-api-endpoints) •
-[👥 Team Division](#-hackathon-team-division-6-members)
-
-<br/>
-
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="650" alt="Divider Animation" />
-
----
-
-</div>
-
-<br/>
-
-## 📌 Problem Overview & Objective
-
-> **The Threat:** Malicious actors are increasingly deploying hyper-realistic **generative AI voice clones, text-to-speech (TTS) deepfakes, and neural vocoder impersonations** to execute CEO fraud, bank transfer scams, and biometric identity theft over telecom and digital VoIP channels.
-
-**VoiceGuard AI** is a multi-factor forensic intelligence system designed to intercept audio files and live speech streams in real time. It calculates a calibrated **0–100% Threat Risk Score**, provides **granular DSP forensic explainability** (neural vocoder artifacts, pitch robotization, spectral cutoff), and issues **automated security advisories** with **sub-20ms inference latency**.
-
-<br/>
-
----
-
-## 🌟 Key Capabilities
-
-<div align="center">
-
-| 🔬 Dual AI Detection Engine | 🔍 Forensic Explainability | 🎙️ Live Stream Interception |
-| :---: | :---: | :---: |
-| Fuses **PyTorch ResNet-SE (Channel Attention) Spectrogram CNN** with a **142-feature Baseline ML Ensemble** (Random Forest + Gradient Boosting). | Deconstructs voices into 5 physical signals: Neural Vocoder phase mismatch, $F_0$ pitch dynamics, high-frequency cutoff, and flatness. | Continuous **3-second microphone chunking** with in-browser 16 kHz PCM WAV encoding and live waveform/equalizer visualizers. |
-
-| 🌐 Multilingual Readiness | 🎯 Calibrated Risk Engine | 📋 ISO/IEEE Audit Export |
-| :---: | :---: | :---: |
-| Full localized UI and actionable advisory guidance in **English 🇬🇧**, **Hindi 🇮🇳**, and **Bengali 🇮🇳**. | Multi-factor fusion mapping probability to **LOW** (0–30%), **MEDIUM** (30–70%), and **HIGH** (70–100%) threat tiers. | One-click export of complete acoustic diagnostic telemetry into structured JSON forensic audit reports. |
-
-</div>
-
-<br/>
-
----
-
-## 🏗️ System Architecture
-
-```text
-                                  🎤 AUDIO INPUT
-                     (Drag & Drop File • 1-Click Samples • Live Mic)
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │   Standardized Preprocessor │
-                         │   • 16,000 Hz Resampling    │
-                         │   • Mono Channel Extraction │
-                         │   • DC Offset & Peak Norm   │
-                         │   • VAD Silence Trimming    │
-                         └──────────────┬──────────────┘
-                                        │
-                   ┌────────────────────┴────────────────────┐
-                   ▼                                         ▼
-    ┌─────────────────────────────┐           ┌─────────────────────────────┐
-    │     2D Mel-Spectrogram      │           │   142 Tabular DSP Features  │
-    │  • 128 Mel Channels         │           │  • 20 MFCCs (Mean & Std)    │
-    │  • Log-Mel Power (dB Scale) │           │  • Delta & Delta-Delta      │
-    │  • Tensor: (1, 128, 128)    │           │  • Spectral Centroid/Flux   │
-    │  • Phase Incoherence Maps   │           │  • Vocoder Energy Ratio     │
-    │                             │           │  • Pitch (F0) & Jitter      │
-    └──────────────┬──────────────┘           └──────────────┬──────────────┘
-                   ▼                                         ▼
-    ┌─────────────────────────────┐           ┌─────────────────────────────┐
-    │     Deep Learning Model     │           │     Baseline ML Ensemble    │
-    │  PyTorch ResNet-SE 2D-CNN   │           │   Random Forest (100 trees) │
-    │  (Channel-Wise Attention)   │           │   + Gradient Boosting (80)  │
-    └──────────────┬──────────────┘           └──────────────┬──────────────┘
-                   │                                         │
-                   └────────────────────┬────────────────────┘
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │  Multi-Factor Risk Engine   │
-                         │  50% Deep CNN + 30% Base ML │
-                         │  + 20% DSP Physical Signals │
-                         └──────────────┬──────────────┘
-                                        │
-                   ┌────────────────────┼────────────────────┐
-                   ▼                    ▼                    ▼
-        ┌─────────────────────┐┌─────────────────┐┌────────────────────┐
-        │  0–100% Risk Score  ││ Explainability  ││ Security Advisory │
-        │  🟢 LOW (0–30%)     ││ Vocoder Mismatch││ "Do NOT authorize │
-        │  🟠 MEDIUM (30–70%) ││ Pitch Step Jitter││  wire transfer.   │
-        │  🔴 HIGH (70–100%)  ││ Spectral Cutoff ││  Initiate callback"│
-        └─────────────────────┘└─────────────────┘└────────────────────┘
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │  Futuristic Cyber Dashboard │
-                         │  • Live Radial SVG Gauge    │
-                         │  • Real-Time Risk Timeline  │
-                         │  • Magma Spectrogram Visual │
-                         │  • Full JSON Audit Export   │
-                         └─────────────────────────────┘
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python main.py
 ```
 
-<br/>
+Open **http://127.0.0.1:8000**. On Windows, `run_voiceguard.bat` uses the project `.venv` when present. The launcher never generates training data or overwrites model checkpoints. If `python` opens the Microsoft Store, install Python 3.12 and enable its PATH option first.
 
----
+For CPU-only PyTorch, install its official CPU wheel before the requirements:
 
-## 🧠 How It Works (Internal Pipeline)
-
-### 1️⃣ Audio Standardization Pipeline
-Raw voice recordings are standardized in `core/audio_preprocessor.py`:
-* **Resampling to 16 kHz Mono**: The forensic standard for speech recognition and acoustic analysis.
-* **DC Bias Removal & Peak Amplitude Normalization**: Centers the waveform at $0.0$ and normalizes peak energy to $-0.95$ to prevent clipping.
-* **Energy-based Voice Activity Detection (VAD)**: Strips leading/trailing silence frames using `librosa.effects.trim` so that only active speech phonemes are scored.
-
----
-
-### 2️⃣ Multi-Domain Feature Extraction
-Audio is converted into two complementary mathematical representations:
-
-1. **2D Mel-Spectrogram (Deep Vision Rep)**:
-   * Computed via Short-Time Fourier Transform (STFT) with $N_{\text{fft}} = 1024$ and hop length of $256$.
-   * Scaled into 128 Mel-frequency channels in decibels ($\text{dB}$), producing a normalized $(1, 128, 128)$ tensor.
-   * Highlights neural vocoder artifacts, dispersion glitches, and high-frequency comb-filtering typical of TTS models.
-
-2. **142 Tabular Forensic Acoustic Features (Physical DSP)**:
-   * **20 MFCCs + $\Delta$ + $\Delta\Delta$**: Captures human vocal tract resonances and instantaneous velocity/acceleration.
-   * **Spectral Rolloff (85% & 95%)**: Measures the high-frequency cutoff boundary (most neural vocoders drop off steeply after 4–6 kHz).
-   * **Neural Vocoder Energy Ratio**: Calculates the energy ratio of frequencies $>4\text{ kHz}$ to $<4\text{ kHz}$.
-   * **Fundamental Frequency ($F_0$) & Micro-Jitter**: Measures prosodic naturalness (natural human vibrato vs synthetic robotic step quantization).
-
----
-
-### 3️⃣ Dual AI Classifier Architecture
-
-* **Model 1: PyTorch ResNet-SE Spectrogram CNN (`core/deep_learning_model.py`)**
-  * Built with 4 residual stages and **Squeeze-and-Excitation (SE)** channel attention blocks that adaptively recalibrate spectral feature maps.
-  * Optimized via **AdamW** with Cosine Annealing learning rate scheduling.
-* **Model 2: Baseline Soft-Voting ML Ensemble (`core/baseline_model.py`)**
-  * Combines `RandomForestClassifier` (100 estimators, max depth 12) with `GradientBoostingClassifier` (80 estimators, learning rate 0.08) through soft probability voting.
-
----
-
-### 4️⃣ Risk Fusion Formula & Calibrated Tiers
-
-$$\text{Risk Score} = 100 \times \Big( 0.50 \cdot P_{\text{Deep CNN}} + 0.30 \cdot P_{\text{Baseline ML}} + 0.20 \cdot P_{\text{DSP Signals}} \Big)$$
-
-* 🟢 **LOW RISK (0% – 30%)**: Verified Authentic Human Speech.
-* 🟠 **MEDIUM RISK (30% – 70%)**: Borderline / Distorted Acoustic Signal.
-* 🔴 **HIGH RISK (70% – 100%)**: Synthetic Speech / AI Voice-Clone Impersonation Detected.
-
-<br/>
-
----
-
-### 🧪 Curated 1-Click Attack & Defense Samples
-
-| Benchmark Sample | Category | Expected Class | Risk Score | Risk Level | Confidence | Status |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `sample_1_real_human_voice.wav` | Natural Speech (Male) | `GENUINE_HUMAN` | **6.1%** | 🟢 **LOW** | 93.5% | ✅ **PASS** |
-| `sample_2_real_female_voice.wav` | Natural Speech (Female) | `GENUINE_HUMAN` | **4.8%** | 🟢 **LOW** | 95.2% | ✅ **PASS** |
-| `sample_3_ai_cloned_voice.wav` | ElevenLabs Style Clone | `AI_SYNTHETIC` | **82.8%** | 🔴 **HIGH** | 82.6% | ✅ **PASS** |
-| `sample_4_neural_tts_deepfake.wav` | Tacotron Vocoder Synth | `AI_SYNTHETIC` | **85.1%** | 🔴 **HIGH** | 84.6% | ✅ **PASS** |
-| `sample_5_robotic_voice_scam.wav` | Voice Scam Impersonator | `AI_SYNTHETIC` | **86.6%** | 🔴 **HIGH** | 86.6% | ✅ **PASS** |
-
-<br/>
-
----
-
-## 🚀 Quick Start Guide
-
-### Prerequisites
-* **Python 3.10 / 3.11 / 3.12**
-* Modern browser (Chrome / Edge / Firefox)
-
-### Step 1: Clone Repository & Install Dependencies
-```bash
-git clone https://github.com/your-username/sih26104-voiceguard-ai.git
-cd sih26104-voiceguard-ai
-
-pip install torch torchaudio librosa soundfile scikit-learn fastapi uvicorn matplotlib numpy scipy
+```powershell
+.venv\Scripts\python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 ```
 
-### Step 2: Automated Model Training & Benchmark Synthesis
-Run the training pipeline to generate the curated dataset and build model checkpoints:
-```bash
-python scripts/train_models.py
+No frontend build is required. Opening `index.html` directly or publishing only static files gives an interface but **cannot run the Python analysis**. Serve the interface and API together. AudioWorklet microphone capture requires localhost or HTTPS and a supported browser.
+
+## What is implemented
+
+- Responsive light interface, sticky navigation, reduced-motion support, keyboard controls and interactive perspective-projected 3D acoustic geometry. The idle visualization is explicitly illustrative; its waveform switches to measured audio after analysis or during microphone capture.
+- Real API-backed file analysis. The old random browser verdict generator is removed.
+- Strict decoding, byte/duration/channel/sample-rate limits, original-timeline candidate speech regions, quality checks, per-speaker inference, explainable model fusion and conservative uncertainty states.
+- The existing trained float CNN and RF/GB ensemble are loaded from `models/`. Untrained WavLM/AASIST/RawNet placeholders no longer contribute or masquerade as trained models.
+- Approximate acoustic clustering with separate speaker lanes, speaking durations, original-recording segment playback, overlap indicators when a pretrained backend supplies them, per-speaker evidence and elevated-concern intervals.
+- Microphone PCM capture through AudioWorklet, actual waveform/spectrum/amplitude, bounded short-window API analysis and full-session analysis after stopping. Window results do not claim persistent live speaker identity.
+- Measured pitch, energy, spectral centroid and pause information. Emotion, fatigue, tension, jitter, shimmer and syllable rate are withheld where reliable evidence is absent.
+- Session history in tab memory, temporary server reports, printable HTML report downloads and JSON report API. Reports include identifiers, time, quality, languages, speakers, model contributions, measured features, limitations and verification recommendations. HTML reports contain no audio; open one and use **Print → Save as PDF**.
+- Primary controls in English, Hindi and Bengali. Analytical explanations currently remain English; interface language is independent of spoken-language detection.
+- Prevention center, explainable architecture, real server progress, useful offline/corrupt/unsupported/short/noisy/uncertain states.
+
+## Scientific scope and limitations
+
+**This is an exploratory analysis tool, not a validated fraud prevention system.** No field accuracy or calibrated confidence percentage is claimed. The supplied model metadata describes a small development dataset. Its scores cannot establish real-world accuracy across people, languages, codecs and unseen generators.
+
+The concern index is 0–100: **LOW <30**, **MEDIUM 30–<70**, **HIGH ≥70**, or **INSUFFICIENT EVIDENCE** with a null score. Within each analysis window, the CNN contributes 50%, acoustic ML 30%, and DSP 20%. The highest window concern is used for a speaker, and the highest speaker concern is used only if all attributed speakers have usable evidence. Strong disagreement, short speech, heavy noise/clipping, detected overlap or missing models withhold the overall index. A low score is not proof of human origin. `synthetic_probability` remains null in public results; individual detector responses are explicitly uncalibrated indices.
+
+The default diarizer clusters measured MFCC timbre features. It is a **low-confidence acoustic estimate**, not a trained biometric speaker counter. It can merge different people or split one person, and does not separate simultaneous voices. Silent gaps are preserved. Very short audio is left unassigned rather than inventing a speaker count. Use the optional pretrained backend for stronger attribution and overlap labels.
+
+The existing models do not separately classify voice cloning, conversion and other editing. They flag acoustic concern only. Voiceprint similarity is retained as an exploratory API feature, and **never authorizes transactions**. Reports always recommend independent verification.
+
+Vocal features are signal measurements: **This is an acoustic signal analysis, not a medical or psychological diagnosis.** The application does not infer someone’s mental state from their voice.
+
+## Optional pretrained language and diarization backends
+
+Adapters are implemented, but **weights are not included**. No audio is sent to a third-party API, no model weights download during a request, and unavailable capabilities are reported honestly.
+
+### Language identification
+
+Install `faster-whisper` and supply a local **multilingual** CTranslate2 Whisper model directory. Do not use an English-only `.en` model for Hindi/Bengali.
+
+```powershell
+.venv\Scripts\python -m pip install "faster-whisper>=1.1,<2"
+$env:VOICEGUARD_LANGUAGE_MODEL = 'C:\path\to\local-multilingual-whisper-model'
+.venv\Scripts\python main.py
 ```
 
-### Step 3: Launch VoiceGuard AI Server
-```bash
-python main.py
-```
-*(On Windows, you can also simply double-click `run_voiceguard.bat`)*.
+The adapter attempts language identification in independent 12-second windows, aggregates language model responses, and retains per-window evidence to surface possible code switching. It also analyzes each speaker. Short or ambiguous windows return unknown. Window-level language response percentages are not calibrated confidence. No transcript is retained. Language failure does not change deepfake scores.
 
-Open your browser at:
-👉 **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
+Reference: [faster-whisper source and language detection API](https://github.com/SYSTRAN/faster-whisper/blob/master/faster_whisper/transcribe.py).
 
----
+### Pretrained speaker diarization
 
-### 🧪 Run Automated Verification Tests
-Execute the comprehensive 13-test verification suite:
-```bash
-python tests/test_voiceguard.py
+Use a local pyannote Community-1 pipeline after obtaining its weights under the model publisher’s terms. This may require accepting the model’s access conditions in your own Hugging Face account.
+
+```powershell
+.venv\Scripts\python -m pip install "pyannote.audio>=4,<5"
+$env:VOICEGUARD_DIARIZATION_MODEL = 'C:\path\to\local-pyannote-pipeline'
+.venv\Scripts\python main.py
 ```
 
-<br/>
+Pyannote 4 dependency requirements may require a newer compatible NumPy/numba stack than the default pinned runtime. Use a separate environment for this optional configuration, allow pip to resolve its declared requirements, then rerun the test suite. The adapter supports the Community-1 `speaker_diarization` output and preserves overlapping turns. Overlapping waveforms are **not source-separated**, so per-speaker risk is withheld on those turns. No diarization accuracy is claimed without a labeled multi-speaker benchmark.
 
----
+Reference: [pyannote Community-1 setup and local use](https://huggingface.co/pyannote/speaker-diarization-community-1).
 
-## 📡 API Reference
+## API
 
-VoiceGuard AI exposes high-performance REST endpoints for batch auditing and real-time streaming integration:
+| Route | Purpose |
+|---|---|
+| `GET /api/health` | Loaded capabilities and processing limits |
+| `GET /api/models` | Model availability and validation limitations |
+| `POST /api/analyze` | Existing multipart analysis route (`file`, optional thresholds, claimed speaker and codec simulation) |
+| `POST /api/analyze-multispeaker` | Alias of the full pipeline |
+| `POST /api/analyze-chunk` | Bounded live audio window; no cross-window speaker identity |
+| `POST /api/jobs` | Start an in-memory analysis; returns a random job token |
+| `GET /api/jobs/{token}` | Actual server stage and completed report |
+| `DELETE /api/jobs/{token}` | Remove a completed report |
+| `GET /api/forensic-report/{token}` | Download JSON report |
+| `POST /api/speaker-diarization` | Full analysis with diarization component response |
+| `POST /api/language-detection` | Full analysis with language component response |
+| `POST /api/vocal-state` | Full analysis with acoustic component response |
+| `GET /api/sample-audios` | Supplied development sample list |
+| `GET /api/sample-audio/{name}` | Safe WAV sample retrieval |
+| `GET /api/voiceprint/profiles` | Existing acoustic profile metadata |
+| `POST /api/voiceprint/enroll` | Explicitly persist an acoustic profile locally |
+| `POST /api/verify-and-detect` | Exploratory acoustic match plus concern evidence; independent verification required |
+| `WS /api/telephony/ws` | Existing carrier adapter, disabled until explicitly configured |
 
-| Method | Endpoint | Description | Content-Type |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/health` | System health check, device accelerator info (CPU/CUDA). | `application/json` |
-| `GET` | `/api/models` | Benchmark accuracy metrics, weights, and DSP metadata. | `application/json` |
-| `GET` | `/api/sample-audios` | Curated demo catalog for 1-click test suites. | `application/json` |
-| `GET` | `/api/sample-audio/{file}` | Audio file streaming for browser playback. | `audio/wav` |
-| `POST` | `/api/analyze` | Full audio forensic analysis, spectrogram generation & waveform points. | `multipart/form-data` |
-| `POST` | `/api/analyze-chunk` | Lightweight 2.8s streaming chunk analyzer for live mic interception. | `multipart/form-data` |
+Public analysis JSON is schema version 3. Route names remain compatible, but old clients must handle nullable scores/confidence and the nested `speakers[].analysis` object. Fake-probability fields are intentionally nullable. The source training utilities and checkpoints remain; the public API does not use their unvalidated calibration claims.
 
-<br/>
+## Privacy and deployment
 
-#### Example `POST /api/analyze` Response:
-```json
-{
-  "success": true,
-  "filename": "suspicious_call.wav",
-  "duration_seconds": 4.0,
-  "sample_rate_hz": 16000,
-  "latency_ms": 18.4,
-  "analysis": {
-    "synthetic_probability": 0.8512,
-    "genuine_probability": 0.1488,
-    "risk_score": 85.1,
-    "risk_level": "HIGH",
-    "risk_color": "#ef4444",
-    "confidence_score": 84.6,
-    "verdict": {
-      "en": "High-Risk Synthetic / AI Cloned Voice",
-      "hi": "उच्च जोखिम: एआई-जनित / क्लोन की गई आवाज़ (High Risk Fake)",
-      "bn": "উচ্চ ঝুঁকি: এআই-ক্লোন করা কণ্ঠস্বর (High Risk Fake)"
-    },
-    "advisory": {
-      "title": "🚨 POTENTIAL VOICE-CLONING IMPERSONATION DETECTED",
-      "recommendation": "DO NOT authorize financial transactions, wire transfers, or disclose sensitive OTPs/passwords.",
-      "action": "Initiate secondary out-of-band verification via an independent callback."
-    },
-    "indicators": [
-      { "id": "deep_cnn", "name": "Deep Learning Spectrogram CNN", "score": 88.4, "severity": "HIGH" },
-      { "id": "vocoder_artifacts", "name": "Neural Vocoder Fingerprint", "score": 82.1, "severity": "HIGH" },
-      { "id": "prosody_dynamics", "name": "Pitch & Prosodic Dynamics", "score": 79.5, "severity": "HIGH" }
-    ]
-  }
-}
+- Supported encoded inputs: WAV, MP3, FLAC, OGG and AIFF as supported by the installed libsndfile decoder. Arbitrary bytes are never treated as raw PCM. Live browser recordings are encoded to PCM WAV.
+- Limits: 25 MB, 120 seconds, up to 8 channels, original sample rates 8–192 kHz; live windows are limited to 12 seconds. Mono analysis resamples to 16 kHz. Clipping/quality is assessed before normalization.
+- One analysis worker runs at a time; busy callers receive 429. Use a **single uvicorn worker** with the in-memory job implementation. Reports expire after approximately 15 minutes and are periodically purged. Closing the tab discards local history; its server report expires automatically.
+- Multipart parsers may spool large uploads to the operating system’s temporary directory. The upload handle is always closed; no permanent audio file is created by analysis. Explicit voiceprint enrollment persists only an embedding and profile metadata under `models/speaker_profiles/`.
+- Localhost works without a key. Remote access requires `VOICEGUARD_API_KEY`. Enter the key in the UI’s connection settings; it remains only in tab memory. Never embed a deployment key in frontend source.
+- For an intentionally public demo only, set `API_DEMO_MODE=true`. This makes uploaded audio and job access available without account authentication; do not use it for sensitive organizational recordings.
+- Same-origin by default. Optional allowed origins are configured with `VOICEGUARD_ALLOWED_ORIGINS` (comma separated). A browser response CSP, content-type protection and origin checks are installed. Rate limits use connection IP, not untrusted forwarded headers. Behind a proxy, configure trusted proxy behavior at the deployment layer.
+- Job tokens are bearer capabilities: possession grants access to that report. The current implementation is not a multi-tenant authenticated report vault. Add user-scoped authorization and an external queue before enterprise use.
+- Carrier streaming additionally requires `VOICEGUARD_ENABLE_TELEPHONY=true` and the server API key in `X-API-Key`. It supplies advisory evidence only, never an instruction to automatically terminate a call or approve a transaction.
+- `render.yaml` installs dependencies without retraining. Check RAM/CPU requirements before deploying. No website is published by this upgrade.
+
+## Verification
+
+```powershell
+.venv\Scripts\python -m pip install -r requirements-dev.txt
+.venv\Scripts\python -m pytest tests -q
+node --check script.js
+node --check core-visual.js
+node --check recorder-worklet.js
 ```
 
-<br/>
+Regression coverage includes silence, short clips, corrupt/unsupported/non-finite/oversized/overlong audio, model availability, language adapter behavior, timeline gaps, overlap labels, report lifecycle, authentication, origin rejection, path containment and known G.711 decode values. Browser validation covers real sample analysis, evidence expansion, speaker playback, report download, and responsive layouts. See `VALIDATION.md` for the actual run results and remaining limits.
 
----
-
-## 👥 Hackathon Team Division (6 Members)
-
-<div align="center">
-
-| Member | Role | Key Responsibilities |
-| :---: | :--- | :--- |
-| **Member 1** | **ML / DSP Specialist** | Audio preprocessing pipeline, 142 tabular feature extraction (MFCCs, Spectral Rolloff, $F_0$). |
-| **Member 2** | **Deep Learning Engineer** | PyTorch ResNet-SE 2D-CNN architecture, Mel-spectrogram tensor pipeline, loss optimization. |
-| **Member 3** | **Backend & Systems Architect** | FastAPI REST & streaming chunk APIs, multi-decoder fallbacks, model serving. |
-| **Member 4** | **Frontend UI/UX Designer** | Cyberpunk Bento-grid glassmorphism dashboard, SVG radial gauge, multilingual support. |
-| **Member 5** | **Real-Time Streaming Engineer** | Web Audio API capture, in-browser 16 kHz PCM WAV encoder, Canvas visualizers. |
-| **Member 6** | **Security Analyst & Pitch Lead** | Threat matrix calibration, curated attack benchmarks, ISO/IEEE JSON audit reports, presentation. |
-
-</div>
-
-<br/>
-
----
-
-## 📁 Repository Directory Structure
-
-```text
-sih26104-voiceguard-ai/
-├── api/
-│   ├── __init__.py
-│   └── server.py                      # FastAPI REST & 2.8s streaming chunk server
-├── core/
-│   ├── __init__.py
-│   ├── audio_preprocessor.py          # 16 kHz Mono, peak norm, VAD silence trimmer
-│   ├── feature_extractor.py           # 142 Tabular features + 2D Mel-Spectrograms
-│   ├── baseline_model.py              # Random Forest + Gradient Boosting Ensemble
-│   ├── deep_learning_model.py         # PyTorch ResNet-SE Spectrogram CNN
-│   ├── risk_engine.py                 # Multi-Factor Risk Engine (0-100%) + Explainability
-│   └── dataset_generator.py           # Physical speech modeling & benchmark generator
-├── dataset/
-│   ├── real/                          # Genuine human voice audio dataset
-│   ├── fake/                          # Synthetic / AI voice clone dataset
-│   └── curated_samples/               # 5 curated 1-click test scenarios
-├── models/
-│   ├── baseline_rf.pkl                # Trained Baseline ML ensemble checkpoint
-│   ├── deep_cnn.pt                    # Trained PyTorch ResNet-SE weights
-│   └── model_meta.json                # Model metrics and architecture metadata
-├── scripts/
-│   ├── train_models.py                # Automated training & dataset pipeline
-│   └── verify_curated_samples.py      # Benchmark validation script
-├── tests/
-│   └── test_voiceguard.py             # 13 Automated unit & integration tests
-├── web/
-│   ├── index.html                     # Luxury Cyber Forensic Bento Dashboard
-│   ├── styles.css                     # Custom glassmorphism, animations & glowing UI
-│   └── app.js                         # Web Audio API, Canvas visualizers, WAV encoder
-├── main.py                            # Auto-resolving root server entry point
-├── run_voiceguard.bat                 # 1-Click Windows batch launcher
-└── README.md                          # Complete project documentation
-```
-
-<br/>
-
----
-
-## 🌟 Support
-
-Agar yeh project pasand aaye toh ek ⭐️ **Star** zaroor dein!
-
-<div align="center">
-
-<a href="https://github.com/your-username/sih26104-voiceguard-ai">
-  <img src="https://img.shields.io/github/stars/your-username/sih26104-voiceguard-ai?style=social" alt="Stars" />
-</a>
-<a href="https://github.com/your-username/sih26104-voiceguard-ai/fork">
-  <img src="https://img.shields.io/github/forks/your-username/sih26104-voiceguard-ai?style=social" alt="Forks" />
-</a>
-
-<br/><br/>
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-<br/>
-
-<sub>Developed for <b>Smart India Hackathon (SIH)</b> • Powered by <b>PyTorch</b> & <b>Librosa DSP</b></sub>
-
-<br/><br/>
-
-<!-- Animated Wave Footer Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:00c9ff,100:9b5de5&amp;height=140&amp;section=footer" width="100%" alt="VoiceGuard AI Footer" />
-
-</div>
+The project’s existing MIT license is retained.

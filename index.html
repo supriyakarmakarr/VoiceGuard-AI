@@ -49,22 +49,25 @@
       </div>
       <div id="livePanel" role="tabpanel" aria-labelledby="liveTab" hidden>
         <div class="live-heading"><span class="mono" id="liveStatus">MICROPHONE OFF</span><time id="recordTimer">00:00</time></div>
+        <div class="live-voice-bar" id="liveVoiceBar"><span class="voice-activity-dot" id="voiceActivityDot"></span><span id="voiceActivityText">Awaiting speech input…</span></div>
         <canvas id="liveWave" height="115" aria-label="Live microphone waveform"></canvas><canvas id="liveSpectrum" height="60" aria-label="Live microphone frequency spectrum"></canvas>
+        <div class="live-transcript-box" id="liveTranscriptBox"><span class="transcript-label mono">SPEECH RECOGNITION (STT)</span><p id="liveTranscriptText" class="transcript-placeholder">Spoken words will appear here in real time as you speak…</p></div>
         <div class="live-metrics"><div><small>AMPLITUDE</small><strong id="liveAmplitude">— dBFS</strong></div><div><small>WINDOW RISK</small><strong id="liveRisk">Awaiting audio</strong></div><div><small>LANGUAGE</small><strong id="liveLanguage">Unknown</strong></div><div><small>VOCAL STATE</small><strong id="liveVocal">Awaiting audio</strong></div></div>
-        <p class="subtle" id="liveSpeaker">Speaker identity and count require analysis of the complete recording.</p>
-        <button class="button primary wide" id="recordButton" data-i18n="enableMic">Enable microphone <span aria-hidden="true">◉</span></button>
-        <p class="privacy-note">Your browser asks for permission. While recording, short audio windows are sent to this analysis server. Stop to review and analyze the complete recording. Maximum 2 minutes.</p>
+        <p class="subtle" id="liveSpeaker">Real-time voice stream active. Complete input is analyzed upon stopping.</p>
+        <div class="live-action-row"><button class="button primary wide" id="recordButton" data-i18n="enableMic">Enable microphone <span aria-hidden="true">◉</span></button></div>
+        <p class="privacy-note">Your browser asks for permission. Real-time speech-to-text captures spoken words while audio is securely processed. Stop recording to review the complete forensic report.</p>
       </div>
       <div id="inputError" class="notice error" role="alert" hidden></div>
       <div class="privacy-note"><span aria-hidden="true">◇</span><span>Analysis audio is processed in memory and discarded. Reports remain on this server for up to 15 minutes. No audio is saved to your browser history.</span></div>
     </article>
     <article class="panel readout-panel reveal" aria-labelledby="readoutTitle" aria-busy="false" id="readout">
       <div class="panel-title"><span class="mono" id="readoutTitle">FORENSIC READOUT</span><span class="pill" id="readoutStatus">AWAITING INPUT</span></div>
-      <div id="emptyReadout" class="empty-readout"><div class="empty-orbit" aria-hidden="true"><span>⌁</span><i></i></div><h3>Every voice has a story.<br>Start with the evidence.</h3><p>Your analysis will appear here.<br>No guesswork. No pre-filled verdicts.</p><div class="empty-tags"><span>Speaker activity</span><span>Model evidence</span><span>Signal quality</span></div></div>
+      <div id="emptyReadout" class="empty-readout"><div class="empty-orbit" aria-hidden="true"><span>⌁</span><i></i></div><h3>Every voice has a story.<br>Start with the evidence.</h3><p>Your analysis will appear here.<br>No guesswork. No pre-filled verdicts.</p><div class="empty-tags"><span>Speech-to-text</span><span>Speaker activity</span><span>Model evidence</span><span>Signal quality</span></div></div>
       <div id="loadingReadout" class="loading-readout" hidden><div class="processing-icon" aria-hidden="true">◎</div><p class="eyebrow">FOLLOWING THE SIGNAL</p><h3 id="analysisStage" role="status">Reading audio</h3><div class="progress-track"><span id="progressLine"></span></div><ol id="stageList"></ol><p class="subtle">Stages reflect server progress. First analysis may take longer while audio libraries warm up.</p></div>
       <div id="resultReadout" hidden>
         <div class="result-hero"><div class="risk-gauge" id="riskGauge"><svg viewBox="0 0 180 180" aria-hidden="true"><circle cx="90" cy="90" r="76"></circle><circle id="gaugeValue" cx="90" cy="90" r="76"></circle></svg><div><strong id="gaugeScore">—</strong><span>CONCERN / 100</span></div></div><div><span class="eyebrow">VOICE AUTHENTICITY RISK</span><h3 id="verdictText"></h3><span class="risk-badge" id="verdictTag"></span><p class="subtle" id="confidence"></p></div></div>
         <div class="summary-grid"><div><small>SPEAKERS</small><strong id="summarySpeakers">—</strong></div><div><small>LANGUAGE</small><strong id="summaryLanguage">—</strong></div><div><small>AUDIO QUALITY</small><strong id="summaryQuality">—</strong></div><div><small>DURATION</small><strong id="summaryDuration">—</strong></div></div>
+        <div class="result-transcript-box" id="resultTranscriptBox" hidden><div class="panel-title"><span class="mono">TRANSCRIBED SPEECH</span><span class="pill">SPEECH-TO-TEXT</span></div><p id="resultTranscriptText"></p></div>
         <p class="notice" id="resultReason"></p><div id="evidenceRows" class="evidence-list"></div>
         <button class="button secondary wide" id="reportButton">Download forensic report <span>↓</span></button><p class="report-note">Printable HTML · measured evidence, speaker findings and limitations</p>
       </div>

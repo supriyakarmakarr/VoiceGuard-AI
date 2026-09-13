@@ -71,17 +71,19 @@ class BodySizeLimit:
         await self.app(scope, bounded_receive, send)
 
 app.add_middleware(BodySizeLimit)
-origins = [s.strip() for s in os.getenv('VOICEGUARD_ALLOWED_ORIGINS', '').split(',') if s.strip()]
-if origins:
-    app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
-                       allow_methods=['GET', 'POST', 'DELETE'], allow_headers=['Content-Type', 'X-API-Key'])
+default_origins = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:3000', 'http://localhost:3000']
+configured_origins = [s.strip() for s in os.getenv('VOICEGUARD_ALLOWED_ORIGINS', '').split(',') if s.strip()]
+origins = configured_origins or default_origins
+app.add_middleware(CORSMiddleware, allow_origins=['*'] if not configured_origins else origins,
+                   allow_credentials=False, allow_methods=['GET', 'POST', 'DELETE', 'OPTIONS'],
+                   allow_headers=['Content-Type', 'X-API-Key', 'Accept', 'Origin'])
 
 
 @app.middleware('http')
 async def security_headers(request: Request, call_next):
-    # Browser requests must be same-origin unless explicitly configured.
     origin = request.headers.get('origin')
-    if request.method in ('POST', 'DELETE') and origin and origin != str(request.base_url).rstrip('/') and origin not in origins:
+    is_local_origin = not origin or origin == 'null' or origin == str(request.base_url).rstrip('/') or origin.startswith('http://127.0.0.1') or origin.startswith('http://localhost') or (configured_origins and origin in configured_origins)
+    if request.method in ('POST', 'DELETE') and origin and not is_local_origin:
         return JSONResponse({'detail': 'Origin is not allowed.'}, status_code=403)
     try:
         if int(request.headers.get('content-length', '0')) > MAX_BYTES + 65536:
@@ -93,7 +95,7 @@ async def security_headers(request: Request, call_next):
     response.headers['Referrer-Policy'] = 'same-origin'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Permissions-Policy'] = 'camera=(), geolocation=(), microphone=(self)'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    response.headers['Content-Security-Policy'] = "default-src 'self' http://127.0.0.1:* http://localhost:*; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     if request.url.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store'
     return response
@@ -122,8 +124,8 @@ def require_pipeline():
 
 def analyze_locked(data, filename, **kwargs):
     engine = require_pipeline()
-    if not processing_lock.acquire(blocking=False):
-        raise HTTPException(429, 'The analysis engine is busy. Please retry shortly.', headers={'Retry-After': '5'})
+    if not processing_lock.acquire(blocking=True, timeout=8.0):
+        raise HTTPException(429, 'The analysis engine is busy. Please retry shortly.', headers={'Retry-After': '3'})
     try:
         return engine.analyze(data, filename, **kwargs)
     finally:
@@ -144,22 +146,24 @@ def model_info():
 @app.post('/api/analyze')
 @app.post('/api/analyze-multispeaker')
 async def analyze_audio(file: UploadFile = File(...), threshold_low: float = Form(30), threshold_high: float = Form(70),
-                        claimed_speaker_id: str = Form(''), simulate_codec: str = Form('none'), _auth=Depends(enforce_security_and_rate_limit)):
+                        claimed_speaker_id: str = Form(''), simulate_codec: str = Form('none'), transcript: str = Form(''),
+                        language: str = Form(''), _auth=Depends(enforce_security_and_rate_limit)):
     if not 0 <= threshold_low < threshold_high <= 100:
         raise HTTPException(422, 'Thresholds must satisfy 0 ≤ low < high ≤ 100.')
     name = file.filename or 'audio.wav'
     data = await read_upload(file)
-    result = await run_in_threadpool(analyze_locked, data, name, low=threshold_low, high=threshold_high, codec=simulate_codec or 'none')
+    result = await run_in_threadpool(analyze_locked, data, name, low=threshold_low, high=threshold_high, codec=simulate_codec or 'none', transcript=transcript, language=language)
     if claimed_speaker_id:
         result['speaker_verification'] = await run_in_threadpool(verify_identity, data, name, claimed_speaker_id)
     return result
 
 
 @app.post('/api/analyze-chunk')
-async def analyze_chunk(file: UploadFile = File(...), chunk_index: int = Form(0), _auth=Depends(enforce_security_and_rate_limit)):
+async def analyze_chunk(file: UploadFile = File(...), chunk_index: int = Form(0), transcript: str = Form(''),
+                        language: str = Form(''), _auth=Depends(enforce_security_and_rate_limit)):
     name = file.filename or 'chunk.wav'
     data = await read_upload(file)
-    result = await run_in_threadpool(analyze_locked, data, name, chunk=True)
+    result = await run_in_threadpool(analyze_locked, data, name, chunk=True, transcript=transcript, language=language)
     risk = result['analysis']
     return {**result, 'chunk_index': chunk_index, 'risk_score': risk['risk_score'], 'risk_level': risk['risk_level'],
             'confidence': None, 'alert': risk['risk_level'] == 'HIGH', 'calibration_mode': 'unvalidated'}
@@ -176,14 +180,14 @@ def job_view(job):
     return {k: job[k] for k in ('status', 'stage', 'stage_label', 'error', 'result') if k in job}
 
 
-def run_job(job_id, data, filename):
+def run_job(job_id, data, filename, transcript='', language=''):
     with jobs_lock:
         jobs[job_id]['status'] = 'running'
     def progress(stage):
         with jobs_lock:
             jobs[job_id].update(stage=stage, stage_label=STAGES[stage])
     try:
-        result = analyze_locked(data, filename, progress=progress)
+        result = analyze_locked(data, filename, progress=progress, transcript=transcript, language=language)
         with jobs_lock:
             jobs[job_id].update(status='complete', result=result)
     except (AudioError, HTTPException) as exc:
@@ -196,7 +200,7 @@ def run_job(job_id, data, filename):
 
 
 @app.post('/api/jobs', status_code=202)
-async def create_job(file: UploadFile = File(...), _auth=Depends(enforce_security_and_rate_limit)):
+async def create_job(file: UploadFile = File(...), transcript: str = Form(''), language: str = Form(''), _auth=Depends(enforce_security_and_rate_limit)):
     require_pipeline()
     filename = file.filename or 'audio.wav'
     data = await read_upload(file)
@@ -209,7 +213,7 @@ async def create_job(file: UploadFile = File(...), _auth=Depends(enforce_securit
         job_id = secrets.token_urlsafe(24)
         jobs[job_id] = {'created': time.monotonic(), 'status': 'queued', 'stage': 0, 'stage_label': STAGES[0]}
     # Retain the task and consume its result; audio only lives in this bounded worker.
-    task = asyncio.create_task(run_in_threadpool(run_job, job_id, data, filename))
+    task = asyncio.create_task(run_in_threadpool(run_job, job_id, data, filename, transcript, language))
     app.state.tasks = getattr(app.state, 'tasks', set())
     app.state.tasks.add(task)
     task.add_done_callback(app.state.tasks.discard)
@@ -245,10 +249,11 @@ def forensic_report(job_id: str, _auth=Depends(enforce_security_and_rate_limit))
 @app.post('/api/speaker-diarization')
 @app.post('/api/language-detection')
 @app.post('/api/vocal-state')
-async def component_analysis(request: Request, file: UploadFile = File(...), _auth=Depends(enforce_security_and_rate_limit)):
+async def component_analysis(request: Request, file: UploadFile = File(...), transcript: str = Form(''),
+                             language: str = Form(''), _auth=Depends(enforce_security_and_rate_limit)):
     name = file.filename or 'audio.wav'
     data = await read_upload(file)
-    result = await run_in_threadpool(analyze_locked, data, name)
+    result = await run_in_threadpool(analyze_locked, data, name, transcript=transcript, language=language)
     key = {'speaker-diarization': 'diarization', 'language-detection': 'language', 'vocal-state': 'vocal_state'}[request.url.path.rsplit('/', 1)[-1]]
     return {key: result[key], 'limitations': result['limitations']}
 
