@@ -38,7 +38,7 @@ const state = {
   transcript: "",
   interimTranscript: "",
   speechRec: null,
-  currentLang: "en",
+  currentLang: "",
   activeVoiceFrames: 0,
 };
 const palette = [
@@ -250,6 +250,7 @@ function chooseFile(file, transcript = "") {
   $("audioPreview").src = state.url;
   $("audioPreview").hidden = false;
   $("analyzeButton").disabled = false;
+  tab("upload");
 }
 
 $("dropZone").onclick = () => $("audioInput").click();
@@ -912,7 +913,9 @@ function startSpeechRecognition() {
         ? "hi-IN"
         : state.currentLang === "bn"
           ? "bn-IN"
-          : "en-US";
+          : state.currentLang === "en"
+            ? "en-US"
+            : (navigator.language || "en-US");
     rec.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; ++i) {
@@ -1117,7 +1120,11 @@ async function streamWindow() {
       signal: controller.signal,
     });
     if (!state.recording || token !== state.recordToken) return;
-    $("liveRisk").textContent = riskText(r.analysis);
+    if (r.analysis?.risk_score != null) {
+      $("liveRisk").textContent = `${Math.round(r.analysis.risk_score)} / 100 · ${r.analysis.risk_level}`;
+    } else {
+      $("liveRisk").textContent = "Listening for speech…";
+    }
     $("liveLanguage").textContent = langText(r.language);
     $("liveVocal").textContent = r.vocal_state?.label || "Measured";
     $("liveStatus").textContent = "● STREAMING · WINDOW ANALYZED";
