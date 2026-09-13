@@ -1,703 +1,343 @@
-"""
-VoiceGuard AI - FastAPI Forensic Server & Enterprise Production Engine
-Provides REST, Chunk-Streaming, and WebSocket APIs for:
-1. Audio Deepfake Forensic Detection & Explainability
-2. Probability Calibration (Platt Scaling & Logistic Meta-Learner)
-3. Biometric Speaker Verification & Voiceprint Enrollment (CEO Fraud Defense)
-4. Out-of-Distribution Telephony Codec Simulation (G.711 μ-law, AMR-NB, Noise)
-5. Live Carrier VoIP / SIP Media Stream Hook (Twilio & Asterisk WebSocket)
-6. Enterprise API Security & Sliding-Window Rate Limiting
-"""
-
-import os
-import sys
-import io
-import time
-import base64
+"""VoiceGuard API: in-memory jobs, bounded audio processing, honest capabilities."""
+import asyncio
+import hmac
 import json
-import numpy as np
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import librosa
+import logging
+import os
+import re
+import secrets
+import threading
+import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends, WebSocket, Request, status
+from pathlib import Path
+
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
-from typing import Optional
+from fastapi.responses import FileResponse, JSONResponse
+from starlette.concurrency import run_in_threadpool
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-# Ensure root is in Python path
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
-from core.audio_preprocessor import AudioPreprocessor
-from core.feature_extractor import FeatureExtractor
-from core.baseline_model import BaselineVoiceClassifier
-from core.deep_learning_model import DeepLearningVoiceClassifier
-from core.risk_engine import RiskEngine
-from core.calibrator import LearnedRiskCalibrator
-from core.speaker_verifier import SpeakerVerifier
-from core.telephony_degradation import TelephonyDegradationPipeline
-from core.vad_preprocessor import VADAudioPreprocessor
-from core.diarization_engine import SpeakerDiarizer
-from core.anti_spoofing_ensemble import MultiModelEnsemble
+from core.forensic_pipeline import ForensicPipeline, AudioError, MAX_BYTES, decode_audio, acoustic_features, speech_regions
 from api.security import enforce_security_and_rate_limit
-from api.telephony import handle_telephony_websocket
 
-# Paths
-MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
-DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset")
-CURATED_DIR = os.path.join(DATASET_DIR, "curated_samples")
-FRONTEND_DIR = os.path.join(PROJECT_ROOT, "web") if os.path.isdir(os.path.join(PROJECT_ROOT, "web")) else PROJECT_ROOT
-
-# Global instances
-preprocessor = AudioPreprocessor()
-vad_preprocessor = VADAudioPreprocessor()
-diarizer = SpeakerDiarizer()
-feature_extractor = FeatureExtractor()
-telephony_degrader = TelephonyDegradationPipeline()
-speaker_verifier = SpeakerVerifier()
-calibrator = None
-risk_engine = RiskEngine()
-multi_model_ensemble = None
-
-baseline_model = None
-deep_model = None
-model_metadata = {}
-
-
-def audio_to_base64_wav(audio: np.ndarray, sr: int = 16000) -> str:
-    """Converts numpy float32 audio to a data:audio/wav;base64 string for direct browser playback."""
-    try:
-        import soundfile as sf
-        buf = io.BytesIO()
-        sf.write(buf, audio, sr, format="WAV", subtype="PCM_16")
-        buf.seek(0)
-        b64 = base64.b64encode(buf.read()).decode("utf-8")
-        return f"data:audio/wav;base64,{b64}"
-    except Exception:
-        return ""
-
-
-def load_models():
-    """Initializes and loads trained ML, Deep Learning, and Calibration models."""
-    global baseline_model, deep_model, calibrator, risk_engine, multi_model_ensemble, model_metadata
-
-    baseline_path = os.path.join(MODELS_DIR, "baseline_rf.pkl")
-    deep_path = os.path.join(MODELS_DIR, "deep_cnn.pt")
-    deep_quantized_path = os.path.join(MODELS_DIR, "deep_cnn_quantized.pt")
-    calibrator_path = os.path.join(MODELS_DIR, "risk_calibrator.pkl")
-    meta_path = os.path.join(MODELS_DIR, "model_meta.json")
-
-    # 1. Load baseline ensemble
-    if os.path.exists(baseline_path):
-        try:
-            baseline_model = BaselineVoiceClassifier(baseline_path)
-            print(f"[API] Loaded Baseline ML model from {baseline_path}")
-        except Exception as e:
-            print(f"[API] Warning loading baseline model: {e}")
-
-    # 2. Load deep learning model (prefer quantized INT8 on CPU if available)
-    load_path = deep_quantized_path if os.path.exists(deep_quantized_path) else deep_path
-    if os.path.exists(load_path):
-        try:
-            deep_model = DeepLearningVoiceClassifier(load_path)
-            print(f"[API] Loaded Deep CNN model from {load_path} (Quantized: {os.path.exists(deep_quantized_path)})")
-        except Exception as e:
-            print(f"[API] Warning loading deep learning model: {e}")
-
-    # 3. Load next-gen multi-model ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)
-    try:
-        cnn_load = load_path if os.path.exists(load_path) else None
-        multi_model_ensemble = MultiModelEnsemble(deep_cnn_path=cnn_load)
-        print("[API] Loaded Next-Gen Multi-Model Ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)")
-    except Exception as e:
-        print(f"[API] Warning initializing multi-model ensemble: {e}")
-
-    # 4. Load learned risk calibrator
-    if os.path.exists(calibrator_path):
-        try:
-            calibrator = LearnedRiskCalibrator(calibrator_path)
-            risk_engine = RiskEngine(calibrator=calibrator, ensemble=multi_model_ensemble)
-            print(f"[API] Loaded Learned Risk Calibrator from {calibrator_path}")
-        except Exception as e:
-            print(f"[API] Warning loading calibrator: {e}")
-    else:
-        risk_engine = RiskEngine(ensemble=multi_model_ensemble)
-
-    # 4. Load metadata
-    if os.path.exists(meta_path):
-        try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                model_metadata = json.load(f)
-        except Exception:
-            pass
+ROOT = Path(__file__).resolve().parents[1]
+LOG = logging.getLogger(__name__)
+pipeline = None
+jobs = {}
+jobs_lock = threading.Lock()
+processing_lock = threading.Lock()
+JOB_TTL = 900
+STAGES = ['Reading audio', 'Detecting speech', 'Separating speakers', 'Identifying language', 'Extracting acoustic features', 'Running trained models', 'Cross-checking forensic signals', 'Assessing confidence', 'Generating forensic report']
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    load_models()
-    speaker_verifier.load_all_profiles()
+async def lifespan(app):
+    global pipeline
+    pipeline = await run_in_threadpool(ForensicPipeline, ROOT)
+    async def expire_reports():
+        while True:
+            await asyncio.sleep(15)
+            with jobs_lock:
+                cleanup_jobs()
+    expiry_task = asyncio.create_task(expire_reports())
     yield
-
-
-app = FastAPI(
-    title="VoiceGuard AI - Enterprise Deepfake & Voiceprint Forensic API",
-    description="Production-Ready Audio Deepfake Detection, Biometric Speaker Verification & Carrier Telephony Hook",
-    version="2.0.0",
-    lifespan=lifespan,
-)
-
-# Enable CORS for cross-origin frontend support
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-def generate_spectrogram_base64(audio: np.ndarray, sr: int = 16000) -> str:
-    """Generates a high-contrast forensic Mel-Spectrogram image encoded as base64 PNG."""
+    expiry_task.cancel()
     try:
-        fig, ax = plt.subplots(figsize=(6, 2.5), dpi=100)
-        fig.patch.set_facecolor("#0b0f19")
-        ax.set_facecolor("#0b0f19")
-
-        mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=1024, hop_length=256, n_mels=128)
-        mel_db = librosa.power_to_db(mel_spec, ref=np.max)
-
-        ax.imshow(
-            mel_db,
-            aspect="auto",
-            origin="lower",
-            cmap="magma",
-            extent=[0, len(audio) / sr, 0, sr // 2],
-        )
-        ax.axis("off")
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-
-        buf = io.BytesIO()
-        plt.savefig(buf, format="png", bbox_inches="tight", pad_inches=0, facecolor=fig.get_facecolor())
-        plt.close(fig)
-        buf.seek(0)
-        b64_str = base64.b64encode(buf.read()).decode("utf-8")
-        return f"data:image/png;base64,{b64_str}"
-    except Exception as e:
-        print(f"Spectrogram render error: {e}")
-        return ""
+        await expiry_task
+    except asyncio.CancelledError:
+        pass
+    pending = list(getattr(app.state, 'tasks', set()))
+    if pending:
+        await asyncio.gather(*pending, return_exceptions=True)
+    jobs.clear()
 
 
-# ==========================================
-# CORE FORENSIC REST ENDPOINTS
-# ==========================================
+app = FastAPI(title='VoiceGuard AI · Voice Forensics', version='3.0.0', lifespan=lifespan)
+class BodySizeLimit:
+    """Bound chunked multipart bodies before the parser can spool unbounded data."""
+    def __init__(self, app):
+        self.app = app
+    async def __call__(self, scope, receive, send):
+        if scope['type'] != 'http':
+            return await self.app(scope, receive, send)
+        total = 0
+        async def bounded_receive():
+            nonlocal total
+            message = await receive()
+            total += len(message.get('body', b''))
+            if total > MAX_BYTES + 65536:
+                raise StarletteHTTPException(413, 'Upload exceeds 25 MB.')
+            return message
+        await self.app(scope, bounded_receive, send)
 
-@app.get("/api/health")
+app.add_middleware(BodySizeLimit)
+origins = [s.strip() for s in os.getenv('VOICEGUARD_ALLOWED_ORIGINS', '').split(',') if s.strip()]
+if origins:
+    app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
+                       allow_methods=['GET', 'POST', 'DELETE'], allow_headers=['Content-Type', 'X-API-Key'])
+
+
+@app.middleware('http')
+async def security_headers(request: Request, call_next):
+    # Browser requests must be same-origin unless explicitly configured.
+    origin = request.headers.get('origin')
+    if request.method in ('POST', 'DELETE') and origin and origin != str(request.base_url).rstrip('/') and origin not in origins:
+        return JSONResponse({'detail': 'Origin is not allowed.'}, status_code=403)
+    try:
+        if int(request.headers.get('content-length', '0')) > MAX_BYTES + 65536:
+            return JSONResponse({'detail': 'Upload exceeds 25 MB.'}, status_code=413)
+    except ValueError:
+        return JSONResponse({'detail': 'Invalid content length.'}, status_code=400)
+    response = await call_next(request)
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'same-origin'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Permissions-Policy'] = 'camera=(), geolocation=(), microphone=(self)'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    if request.url.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@app.exception_handler(AudioError)
+async def audio_error_handler(request, exc):
+    return JSONResponse({'detail': str(exc)}, status_code=exc.status)
+
+
+async def read_upload(file):
+    try:
+        data = await file.read(MAX_BYTES + 1)
+        if len(data) > MAX_BYTES:
+            raise AudioError('Upload exceeds 25 MB.', 413)
+        return data
+    finally:
+        await file.close()
+
+
+def require_pipeline():
+    if pipeline is None:
+        raise HTTPException(503, 'The analysis service is starting. Please retry.')
+    return pipeline
+
+
+def analyze_locked(data, filename, **kwargs):
+    engine = require_pipeline()
+    if not processing_lock.acquire(blocking=False):
+        raise HTTPException(429, 'The analysis engine is busy. Please retry shortly.', headers={'Retry-After': '5'})
+    try:
+        return engine.analyze(data, filename, **kwargs)
+    finally:
+        processing_lock.release()
+
+
+@app.get('/api/health')
 def health_check():
-    """Health status, model load verification, and system readiness."""
-    return {
-        "status": "healthy",
-        "service": "SIH26104 - VoiceGuard AI Production Engine",
-        "version": "2.0.0",
-        "baseline_model_loaded": baseline_model is not None,
-        "deep_model_loaded": deep_model is not None,
-        "calibrator_loaded": calibrator is not None and getattr(calibrator, "is_fitted", False),
-        "quantized_cpu_active": os.path.exists(os.path.join(MODELS_DIR, "deep_cnn_quantized.pt")),
-        "enrolled_speakers_count": len(speaker_verifier.enrolled_profiles),
-        "device": str(deep_model.device) if deep_model else "cpu",
-        "timestamp": time.time(),
-    }
+    return {'status': 'ready' if pipeline else 'starting', 'version': '3.0.0', **(pipeline.capabilities() if pipeline else {})}
 
 
-@app.get("/api/models")
-def get_models_info():
-    """Returns model benchmark accuracy, metrics, architecture, and calibration details."""
-    lat_report_path = os.path.join(MODELS_DIR, "benchmark_latency.json")
-    stress_report_path = os.path.join(MODELS_DIR, "stress_test_report.json")
-
-    latency_bench = {}
-    stress_bench = {}
-    if os.path.exists(lat_report_path):
-        try:
-            with open(lat_report_path, "r", encoding="utf-8") as f:
-                latency_bench = json.load(f)
-        except Exception:
-            pass
-
-    if os.path.exists(stress_report_path):
-        try:
-            with open(stress_report_path, "r", encoding="utf-8") as f:
-                stress_bench = json.load(f)
-        except Exception:
-            pass
-
-    return {
-        "metadata": model_metadata,
-        "baseline_metrics": baseline_model.metrics if baseline_model else {},
-        "deep_metrics": deep_model.metrics if deep_model else {},
-        "calibration_metrics": calibrator.metrics if calibrator else {},
-        "latency_benchmark": latency_bench,
-        "stress_test_summary": stress_bench,
-        "enrolled_profiles": speaker_verifier.list_profiles(),
-        "feature_count": len(baseline_model.feature_names) if baseline_model else 0,
-    }
+@app.get('/api/models')
+def model_info():
+    return {'capabilities': require_pipeline().capabilities(),
+            'limitations': 'Supplied models have a small development benchmark. No real-world accuracy or deployment confidence is claimed.'}
 
 
-@app.get("/api/sample-audios")
-def list_sample_audios():
-    """Returns curated demo audio files for 1-click hackathon and enterprise testing."""
-    os.makedirs(CURATED_DIR, exist_ok=True)
-    files = [f for f in os.listdir(CURATED_DIR) if f.lower().endswith(".wav")]
-    samples = []
-
-    descriptions = {
-        "sample_1_real_human_voice.wav": {
-            "title": "Natural Human Speech 1 (CEO / Vikram)",
-            "expected": "GENUINE_HUMAN",
-            "category": "Authentic",
-            "badge": "Enrolled CEO Voice",
-            "speaker_id": "ceo_vikram",
-        },
-        "sample_2_real_female_voice.wav": {
-            "title": "Natural Human Speech 2 (CFO / Ananya)",
-            "expected": "GENUINE_HUMAN",
-            "category": "Authentic",
-            "badge": "Enrolled CFO Voice",
-            "speaker_id": "cfo_ananya",
-        },
-        "sample_3_ai_cloned_voice.wav": {
-            "title": "AI Voice Clone (ElevenLabs style)",
-            "expected": "AI_SYNTHETIC",
-            "category": "Voice Clone",
-            "badge": "High Risk Clone",
-            "speaker_id": "ceo_vikram",  # targeting CEO!
-        },
-        "sample_4_neural_tts_deepfake.wav": {
-            "title": "Neural TTS Deepfake (Tacotron vocoder)",
-            "expected": "AI_SYNTHETIC",
-            "category": "Synthetic TTS",
-            "badge": "High Risk Synth",
-        },
-        "sample_5_robotic_voice_scam.wav": {
-            "title": "Voice Scam Impersonator (Robotic artifacts)",
-            "expected": "AI_SYNTHETIC",
-            "category": "Voice Scam",
-            "badge": "High Risk Scam",
-        },
-    }
-
-    for f in files:
-        meta = descriptions.get(f, {
-            "title": f.replace("_", " ").replace(".wav", "").title(),
-            "expected": "UNKNOWN",
-            "category": "Demo Sample",
-            "badge": "Sample",
-        })
-        samples.append({
-            "filename": f,
-            "url": f"/api/sample-audio/{f}",
-            **meta,
-        })
-    return {"samples": samples}
+@app.post('/api/analyze')
+@app.post('/api/analyze-multispeaker')
+async def analyze_audio(file: UploadFile = File(...), threshold_low: float = Form(30), threshold_high: float = Form(70),
+                        claimed_speaker_id: str = Form(''), simulate_codec: str = Form('none'), _auth=Depends(enforce_security_and_rate_limit)):
+    if not 0 <= threshold_low < threshold_high <= 100:
+        raise HTTPException(422, 'Thresholds must satisfy 0 ≤ low < high ≤ 100.')
+    name = file.filename or 'audio.wav'
+    data = await read_upload(file)
+    result = await run_in_threadpool(analyze_locked, data, name, low=threshold_low, high=threshold_high, codec=simulate_codec or 'none')
+    if claimed_speaker_id:
+        result['speaker_verification'] = await run_in_threadpool(verify_identity, data, name, claimed_speaker_id)
+    return result
 
 
-@app.get("/api/sample-audio/{filename}")
-def get_sample_audio_file(filename: str):
-    """Serves the WAV audio file for playback."""
-    file_path = os.path.join(CURATED_DIR, filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Sample audio file not found.")
-    return FileResponse(file_path, media_type="audio/wav")
+@app.post('/api/analyze-chunk')
+async def analyze_chunk(file: UploadFile = File(...), chunk_index: int = Form(0), _auth=Depends(enforce_security_and_rate_limit)):
+    name = file.filename or 'chunk.wav'
+    data = await read_upload(file)
+    result = await run_in_threadpool(analyze_locked, data, name, chunk=True)
+    risk = result['analysis']
+    return {**result, 'chunk_index': chunk_index, 'risk_score': risk['risk_score'], 'risk_level': risk['risk_level'],
+            'confidence': None, 'alert': risk['risk_level'] == 'HIGH', 'calibration_mode': 'unvalidated'}
 
 
-@app.post("/api/analyze")
-async def analyze_audio(
-    request: Request,
-    file: UploadFile = File(...),
-    threshold_low: float = Form(30.0),
-    threshold_high: float = Form(70.0),
-    claimed_speaker_id: Optional[str] = Form(None),
-    simulate_codec: Optional[str] = Form(None),  # 'none', 'g711_mulaw', 'amr_nb', 'babble_noise'
-    _auth = Depends(enforce_security_and_rate_limit),
-):
-    """
-    Next-Generation Multi-Speaker Forensic Analysis Pipeline:
-    1. Preprocessing + Noise Gating + VAD Speech Segmentation
-    2. Optional Telephony Codec Degradation Simulation
-    3. Speaker Diarization ("Who spoke when?")
-    4. Speaker-wise Audio Extraction & Multi-Model Ensemble (WavLM, AASIST, RawNet, Vocoder, Spec-CNN)
-    5. Score Fusion & 3-Tier Calibrated Verdict (REAL, AI-GENERATED, UNCERTAIN)
-    6. Granular Suspicious Temporal Intervals per speaker
-    7. Dual-Factor Identity Verification (for CEO Fraud checks).
-    """
-    if baseline_model is None or deep_model is None or multi_model_ensemble is None:
-        load_models()
+def cleanup_jobs():
+    now = time.monotonic()
+    for key in list(jobs):
+        if now - jobs[key]['created'] > JOB_TTL and jobs[key]['status'] not in ('queued', 'running'):
+            del jobs[key]
 
-    start_time = time.time()
+
+def job_view(job):
+    return {k: job[k] for k in ('status', 'stage', 'stage_label', 'error', 'result') if k in job}
+
+
+def run_job(job_id, data, filename):
+    with jobs_lock:
+        jobs[job_id]['status'] = 'running'
+    def progress(stage):
+        with jobs_lock:
+            jobs[job_id].update(stage=stage, stage_label=STAGES[stage])
     try:
-        audio_bytes = await file.read()
-        if len(audio_bytes) < 100:
-            raise HTTPException(status_code=400, detail="Uploaded audio file is empty or corrupted.")
-
-        # 1. Advanced Preprocessing: Resampling, Normalization, Spectral Gating Noise Reduction, VAD
-        vad_res = vad_preprocessor.process(audio_bytes, apply_noise_reduction=True, apply_vad=True)
-        raw_trimmed = vad_res["cleaned_full_audio"]
-        audio = vad_res["audio"]
-        duration = vad_res["total_duration_sec"]
-
-        if len(raw_trimmed) < 1600:
-            proc = preprocessor.process(audio_bytes)
-            audio = proc["audio"]
-            raw_trimmed = proc["raw_trimmed"]
-            duration = proc["duration_sec"]
-
-        # 2. Apply Telephony Simulation if requested
-        if simulate_codec and simulate_codec != "none":
-            if simulate_codec == "g711_mulaw":
-                audio = telephony_degrader.encode_decode_g711_mulaw(audio)
-                raw_trimmed = telephony_degrader.encode_decode_g711_mulaw(raw_trimmed)
-            elif simulate_codec == "amr_nb":
-                audio = telephony_degrader.apply_amr_narrowband_filter(audio)
-                raw_trimmed = telephony_degrader.apply_amr_narrowband_filter(raw_trimmed)
-            elif simulate_codec == "babble_noise":
-                audio = telephony_degrader.inject_environmental_noise(audio, snr_db=12.0)
-                raw_trimmed = telephony_degrader.inject_environmental_noise(raw_trimmed, snr_db=12.0)
-            elif simulate_codec == "full_phone_call":
-                audio = telephony_degrader.apply_realistic_phone_call_pipeline(audio)
-                raw_trimmed = telephony_degrader.apply_realistic_phone_call_pipeline(raw_trimmed)
-
-        # 3. Speaker Diarization ("Who Spoke When?")
-        diar_result = diarizer.diarize(raw_trimmed, sr=preprocessor.target_sr)
-        speaker_turns = diar_result["speaker_turns"]
-        speaker_audios = diar_result["speaker_audio"]
-        speaker_stats = diar_result["speaker_stats"]
-
-        # 4. Multi-Model Forensic Ensemble Assessment per Speaker
-        custom_risk_engine = RiskEngine(
-            low_threshold=threshold_low,
-            high_threshold=threshold_high,
-            calibrator=calibrator,
-            ensemble=multi_model_ensemble,
-        )
-
-        speakers_analysis = []
-        any_fake_speaker = False
-        any_uncertain_speaker = False
-
-        for spk_name, spk_wav in speaker_audios.items():
-            stats = speaker_stats.get(spk_name, {})
-            # Run 5-model ensemble on this speaker's audio
-            if multi_model_ensemble:
-                spk_eval = multi_model_ensemble.predict_speaker_audio(spk_wav, sr=preprocessor.target_sr)
-            else:
-                spk_eval = {
-                    "synthetic_probability": 15.0,
-                    "genuine_probability": 85.0,
-                    "tier_verdict": "REAL",
-                    "verdict_badge": "🟢 REAL",
-                    "verdict_desc": "Natural Speech",
-                    "confidence": 90.0,
-                    "agreement_score": 90.0,
-                    "model_scores": {"wavlm": 15.0, "aasist": 15.0, "rawnet": 15.0, "vocoder": 15.0, "spec_cnn": 15.0},
-                }
-
-            # Find suspicious intervals for this speaker
-            spk_suspicious = custom_risk_engine.find_suspicious_intervals(spk_wav, sr=preprocessor.target_sr)
-
-            # Generate isolated audio snippet (up to 30s)
-            spk_preview = spk_wav[:min(len(spk_wav), 16000 * 30)]
-            spk_audio_b64 = audio_to_base64_wav(spk_preview, sr=preprocessor.target_sr)
-
-            if spk_eval["tier_verdict"] == "AI_GENERATED":
-                any_fake_speaker = True
-            elif spk_eval["tier_verdict"] == "UNCERTAIN":
-                any_uncertain_speaker = True
-
-            speakers_analysis.append({
-                "speaker_id": spk_name,
-                "speaking_time_sec": stats.get("total_time_sec", round(len(spk_wav) / preprocessor.target_sr, 2)),
-                "percentage": stats.get("percentage", 100.0),
-                "turn_count": stats.get("turn_count", 1),
-                "verdict": spk_eval["tier_verdict"],
-                "badge": spk_eval["verdict_badge"],
-                "description": spk_eval["verdict_desc"],
-                "synthetic_probability": spk_eval["synthetic_probability"],
-                "genuine_probability": spk_eval["genuine_probability"],
-                "confidence": spk_eval["confidence"],
-                "agreement_score": spk_eval["agreement_score"],
-                "model_scores": spk_eval["model_scores"],
-                "suspicious_intervals": spk_suspicious,
-                "audio_b64": spk_audio_b64,
-            })
-
-        # 5. Global File Inference (Dual Models + Calibrated Risk Engine)
-        if baseline_model:
-            base_result = baseline_model.predict(audio)
-        else:
-            base_result = {"synthetic_probability": 0.5, "genuine_probability": 0.5, "confidence": 0.5}
-
-        if deep_model:
-            deep_result = deep_model.predict(audio)
-        else:
-            deep_result = {"synthetic_probability": 0.5, "genuine_probability": 0.5, "confidence": 0.5}
-
-        forensic_signals = feature_extractor.compute_forensic_signals(raw_trimmed)
-
-        risk_result = custom_risk_engine.evaluate(
-            deep_result=deep_result,
-            baseline_result=base_result,
-            forensic_signals=forensic_signals,
-            audio_duration=duration,
-            raw_audio=raw_trimmed,
-            sr=preprocessor.target_sr,
-        )
-
-        # Reconcile overall verdict with speaker-level findings
-        if any_fake_speaker and risk_result["tier_verdict"] != "AI_GENERATED":
-            risk_result["tier_verdict"] = "AI_GENERATED"
-            risk_result["tier_badge"] = "🔴 AI-GENERATED"
-            risk_result["risk_level"] = "HIGH"
-            risk_result["risk_color"] = "#ef4444"
-        elif any_uncertain_speaker and risk_result["tier_verdict"] == "REAL":
-            risk_result["tier_verdict"] = "UNCERTAIN"
-            risk_result["tier_badge"] = "🟡 UNCERTAIN"
-            risk_result["risk_level"] = "MEDIUM"
-            risk_result["risk_color"] = "#f59e0b"
-
-        # Optional Biometric Speaker Verification (CEO-Fraud Check)
-        dual_factor_result = None
-        if claimed_speaker_id and claimed_speaker_id.strip():
-            dual_factor_result = speaker_verifier.evaluate_dual_factor_transaction(
-                deepfake_risk_result=risk_result,
-                claimed_speaker_id=claimed_speaker_id.strip(),
-                audio_input=raw_trimmed,
-            )
-
-        # Generate Forensic Spectrogram Base64 Image
-        spectrogram_b64 = generate_spectrogram_base64(raw_trimmed, sr=preprocessor.target_sr)
-
-        # Waveform preview points (for fast rendering on frontend canvas)
-        num_preview_pts = 80
-        step = max(1, len(raw_trimmed) // num_preview_pts)
-        waveform_pts = [round(float(np.max(np.abs(raw_trimmed[i : i + step]))), 3) for i in range(0, len(raw_trimmed), step)][:num_preview_pts]
-
-        latency_ms = round((time.time() - start_time) * 1000, 1)
-
-        response_payload = {
-            "success": True,
-            "filename": file.filename,
-            "duration_seconds": round(duration, 2),
-            "sample_rate_hz": preprocessor.target_sr,
-            "latency_ms": latency_ms,
-            "codec_simulation_applied": simulate_codec or "none",
-            "overall_verdict": risk_result["tier_verdict"],
-            "overall_badge": risk_result["tier_badge"],
-            "analysis": risk_result,
-            "deepfake_analysis": risk_result,
-            "diarization": {
-                "num_speakers": diar_result["num_speakers"],
-                "speaker_turns": speaker_turns,
-                "speaker_stats": speaker_stats,
-                "timeline_summary": diar_result["timeline_summary"],
-                "speakers": speakers_analysis,
-            },
-            "speaker_verification": dual_factor_result,
-            "models_raw": {
-                "deep_cnn": deep_result,
-                "baseline_rf": base_result,
-            },
-            "spectrogram_image": spectrogram_b64,
-            "waveform_preview": waveform_pts,
-            "timestamp": time.time(),
-        }
-
-        # Inject rate limit headers
-        headers = {
-            "X-RateLimit-Limit": str(getattr(request.state, "rate_limit_limit", 60)),
-            "X-RateLimit-Remaining": str(getattr(request.state, "rate_limit_remaining", 59)),
-        }
-        return JSONResponse(content=response_payload, headers=headers)
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        result = analyze_locked(data, filename, progress=progress)
+        with jobs_lock:
+            jobs[job_id].update(status='complete', result=result)
+    except (AudioError, HTTPException) as exc:
+        with jobs_lock:
+            jobs[job_id].update(status='failed', error=str(exc) if isinstance(exc, AudioError) else exc.detail)
+    except Exception:
+        LOG.exception('Analysis job failed')
+        with jobs_lock:
+            jobs[job_id].update(status='failed', error='Audio processing failed. Try a shorter, clear WAV recording.')
 
 
-@app.post("/api/analyze-chunk")
-async def analyze_stream_chunk(
-    request: Request,
-    file: UploadFile = File(...),
-    chunk_index: int = Form(0),
-    _auth = Depends(enforce_security_and_rate_limit),
-):
-    """
-    Lightweight streaming chunk endpoint for real-time microphone monitoring.
-    Processes small 2-3 second audio chunks with low-latency response.
-    """
-    start_time = time.time()
-    if baseline_model is None or deep_model is None:
-        load_models()
-
-    try:
-        audio_bytes = await file.read()
-        proc = preprocessor.process(audio_bytes, target_duration=3.0)
-        audio = proc["audio"]
-        raw_trimmed = proc["raw_trimmed"]
-        duration = proc["duration_sec"]
-
-        base_result = baseline_model.predict(audio) if baseline_model else {"synthetic_probability": 0.5}
-        deep_result = deep_model.predict(audio) if deep_model else {"synthetic_probability": 0.5}
-        forensic_signals = feature_extractor.compute_forensic_signals(raw_trimmed)
-
-        risk_result = risk_engine.evaluate(deep_result, base_result, forensic_signals, audio_duration=duration)
-        latency_ms = round((time.time() - start_time) * 1000, 1)
-
-        return {
-            "chunk_index": chunk_index,
-            "risk_score": risk_result["risk_score"],
-            "risk_level": risk_result["risk_level"],
-            "risk_color": risk_result["risk_color"],
-            "confidence": risk_result["confidence_score"],
-            "synthetic_probability": risk_result["synthetic_probability"],
-            "calibration_mode": risk_result["calibration"]["mode"],
-            "latency_ms": latency_ms,
-            "alert": risk_result["risk_level"] == "HIGH",
-            "verdict": risk_result["verdict"],
-            "advisory": risk_result["advisory"],
-            "advisory_title": risk_result["advisory"]["title"],
-            "indicators": risk_result["indicators"],
-            "analysis": risk_result,
-            "deepfake_analysis": risk_result,
-            "timestamp": time.time(),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chunk analysis error: {str(e)}")
+@app.post('/api/jobs', status_code=202)
+async def create_job(file: UploadFile = File(...), _auth=Depends(enforce_security_and_rate_limit)):
+    require_pipeline()
+    filename = file.filename or 'audio.wav'
+    data = await read_upload(file)
+    # Decode before accepting; malformed audio gets a precise error instead of a fake stage.
+    await run_in_threadpool(decode_audio, data, filename)
+    with jobs_lock:
+        cleanup_jobs()
+        if len(jobs) >= 30 or any(j['status'] in ('queued', 'running') for j in jobs.values()):
+            raise HTTPException(429, 'The analysis queue is busy. Please retry shortly.', headers={'Retry-After': '5'})
+        job_id = secrets.token_urlsafe(24)
+        jobs[job_id] = {'created': time.monotonic(), 'status': 'queued', 'stage': 0, 'stage_label': STAGES[0]}
+    # Retain the task and consume its result; audio only lives in this bounded worker.
+    task = asyncio.create_task(run_in_threadpool(run_job, job_id, data, filename))
+    app.state.tasks = getattr(app.state, 'tasks', set())
+    app.state.tasks.add(task)
+    task.add_done_callback(app.state.tasks.discard)
+    return {'job_id': job_id, 'expires_in_seconds': JOB_TTL}
 
 
-# ==========================================
-# BIOMETRIC SPEAKER VERIFICATION ENDPOINTS
-# ==========================================
-
-@app.get("/api/voiceprint/profiles")
-def list_voiceprint_profiles():
-    """Lists all enrolled biometric speaker profiles (e.g. CEO, CFO, Family members)."""
-    return {
-        "profiles": speaker_verifier.list_profiles(),
-        "threshold": speaker_verifier.threshold,
-    }
+@app.get('/api/jobs/{job_id}')
+def get_job(job_id: str, _auth=Depends(enforce_security_and_rate_limit)):
+    with jobs_lock:
+        cleanup_jobs()
+        if job_id not in jobs:
+            raise HTTPException(404, 'Analysis expired or was removed.')
+        return job_view(jobs[job_id])
 
 
-@app.post("/api/voiceprint/enroll")
-async def enroll_voiceprint(
-    file: UploadFile = File(...),
-    speaker_id: str = Form(...),
-    name: str = Form(...),
-    role: str = Form("Executive"),
-    department: str = Form("Corporate Treasury"),
-    _auth = Depends(enforce_security_and_rate_limit),
-):
-    """Enrolls a new trusted voiceprint biometric profile."""
-    try:
-        audio_bytes = await file.read()
-        res = speaker_verifier.enroll_speaker(
-            speaker_id=speaker_id,
-            name=name,
-            audio_input=audio_bytes,
-            role=role,
-            department=department,
-        )
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Enrollment failed: {str(e)}")
+@app.delete('/api/jobs/{job_id}')
+def delete_job(job_id: str, _auth=Depends(enforce_security_and_rate_limit)):
+    with jobs_lock:
+        if job_id in jobs and jobs[job_id]['status'] in ('running', 'queued'):
+            raise HTTPException(409, 'Analysis is running. Wait until it completes to remove its report.')
+        jobs.pop(job_id, None)
+    return {'deleted': True}
 
 
-@app.post("/api/verify-and-detect")
-async def verify_speaker_and_detect(
-    file: UploadFile = File(...),
-    claimed_speaker_id: str = Form(...),
-    _auth = Depends(enforce_security_and_rate_limit),
-):
-    """
-    Dual-Factor Verification endpoint for wire transfer & executive authorization:
-    1. Is this voice synthetic / cloned? (Deepfake Engine)
-    2. Does this voice match the enrolled voiceprint of the claimed executive? (Biometric Engine)
-    """
-    if baseline_model is None or deep_model is None:
-        load_models()
-
-    try:
-        audio_bytes = await file.read()
-        proc = preprocessor.process(audio_bytes)
-        audio = proc["audio"]
-        raw_trimmed = proc["raw_trimmed"]
-
-        base_res = baseline_model.predict(audio) if baseline_model else {"synthetic_probability": 0.5}
-        deep_res = deep_model.predict(audio) if deep_model else {"synthetic_probability": 0.5}
-        sig = feature_extractor.compute_forensic_signals(raw_trimmed)
-        risk = risk_engine.evaluate(deep_res, base_res, sig, audio_duration=proc["duration_sec"])
-
-        dual_decision = speaker_verifier.evaluate_dual_factor_transaction(
-            deepfake_risk_result=risk,
-            claimed_speaker_id=claimed_speaker_id,
-            audio_input=raw_trimmed,
-        )
-
-        return {
-            "success": True,
-            "decision": dual_decision,
-            "deepfake_analysis": risk,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Dual-factor verification failed: {str(e)}")
+@app.get('/api/forensic-report/{job_id}')
+def forensic_report(job_id: str, _auth=Depends(enforce_security_and_rate_limit)):
+    job = get_job(job_id)
+    if job['status'] != 'complete':
+        raise HTTPException(409, 'The report is not ready.')
+    return JSONResponse(job['result'], headers={'Content-Disposition': 'attachment; filename="voiceguard-forensic-report.json"'})
 
 
-# ==========================================
-# TELEPHONY CARRIER WEBSOCKET HOOK
-# ==========================================
-
-@app.websocket("/api/telephony/ws")
-async def telephony_carrier_websocket(websocket: WebSocket):
-    """
-    Live carrier telecom WebSocket hook (Twilio Media Streams & Asterisk AudioSocket compatible).
-    Receives base64 μ-law 8kHz audio packets and streams back instant fraud intercept warnings.
-    """
-    if baseline_model is None or deep_model is None:
-        load_models()
-    await handle_telephony_websocket(websocket, baseline_model, deep_model, risk_engine)
+@app.post('/api/speaker-diarization')
+@app.post('/api/language-detection')
+@app.post('/api/vocal-state')
+async def component_analysis(request: Request, file: UploadFile = File(...), _auth=Depends(enforce_security_and_rate_limit)):
+    name = file.filename or 'audio.wav'
+    data = await read_upload(file)
+    result = await run_in_threadpool(analyze_locked, data, name)
+    key = {'speaker-diarization': 'diarization', 'language-detection': 'language', 'vocal-state': 'vocal_state'}[request.url.path.rsplit('/', 1)[-1]]
+    return {key: result[key], 'limitations': result['limitations']}
 
 
-# ==========================================
-# STATIC WEB FRONTEND
-# ==========================================
+@app.get('/api/sample-audios')
+def samples():
+    folder = ROOT / 'dataset/curated_samples'
+    return {'samples': [{'filename': p.name, 'title': p.stem.replace('_', ' '), 'url': '/api/sample-audio/' + p.name,
+                         'category': 'Development sample · not ground truth'} for p in sorted(folder.glob('*.wav'))[:12]]}
 
-if os.path.exists(FRONTEND_DIR):
-    if os.path.isdir(os.path.join(FRONTEND_DIR, "static")):
-        app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_DIR, "static")), name="static")
 
-    @app.get("/styles.css")
-    def serve_styles():
-        return FileResponse(os.path.join(FRONTEND_DIR, "styles.css"), media_type="text/css")
+@app.get('/api/sample-audio/{filename}')
+def sample_audio(filename: str):
+    folder = (ROOT / 'dataset/curated_samples').resolve()
+    candidate = (folder / filename).resolve()
+    if candidate.parent != folder or candidate.suffix.lower() != '.wav' or not candidate.is_file():
+        raise HTTPException(404, 'Sample not found.')
+    return FileResponse(candidate, media_type='audio/wav')
 
-    @app.get("/tokens.css")
-    def serve_tokens():
-        return FileResponse(os.path.join(FRONTEND_DIR, "tokens.css"), media_type="text/css")
 
-    @app.get("/app.js")
-    def serve_app_js():
-        return FileResponse(os.path.join(FRONTEND_DIR, "app.js"), media_type="application/javascript")
+_verifier = None
 
-    @app.get("/script.js")
-    def serve_script_js():
-        return FileResponse(os.path.join(FRONTEND_DIR, "script.js"), media_type="application/javascript")
+def get_verifier():
+    global _verifier
+    if _verifier is None:
+        from core.speaker_verifier import SpeakerVerifier
+        _verifier = SpeakerVerifier(profiles_dir=str(ROOT / 'models/speaker_profiles'))
+        _verifier.load_all_profiles()
+    return _verifier
 
-    @app.get("/", response_class=HTMLResponse)
-    def serve_index():
-        index_file = os.path.join(FRONTEND_DIR, "index.html")
-        if os.path.exists(index_file):
-            with open(index_file, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read())
-        return HTMLResponse("<h2>VoiceGuard AI Web UI initializing...</h2>")
+
+def verify_identity(data, filename, claimed):
+    y, _ = decode_audio(data, filename)
+    match = get_verifier().verify_claimed_identity(y, claimed)
+    match.pop('confidence_pct', None)
+    match['verified'] = False
+    return {'transaction_decision': 'SECONDARY_VERIFICATION_REQUIRED', 'authorized': False, 'verification_details': match,
+            'reason': 'Acoustic similarity is exploratory and cannot authorize a transaction or verify identity.'}
+
+
+@app.get('/api/voiceprint/profiles')
+def profiles(_auth=Depends(enforce_security_and_rate_limit)):
+    return {'profiles': get_verifier().list_profiles(), 'threshold': get_verifier().threshold}
+
+
+@app.post('/api/voiceprint/enroll')
+async def enroll(file: UploadFile = File(...), speaker_id: str = Form(...), name: str = Form(...), role: str = Form(''), department: str = Form(''),
+                 _auth=Depends(enforce_security_and_rate_limit)):
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', speaker_id):
+        raise HTTPException(422, 'Speaker ID must contain 1–64 letters, digits, underscores or hyphens.')
+    filename = file.filename or 'audio.wav'
+    data = await read_upload(file)
+    y, _ = await run_in_threadpool(decode_audio, data, filename)
+    if len(y) < 3 * 16000 or not speech_regions(y):
+        raise HTTPException(422, 'Enrollment requires at least three seconds of clear speech.')
+    result = await run_in_threadpool(get_verifier().enroll_speaker, speaker_id, name[:120], y, role[:120], department[:120])
+    result.pop('profile_path', None)
+    return {**result, 'notice': 'Enrollment intentionally persists an acoustic embedding locally. No raw audio is saved.'}
+
+
+@app.post('/api/verify-and-detect')
+async def verify(file: UploadFile = File(...), claimed_speaker_id: str = Form(...), _auth=Depends(enforce_security_and_rate_limit)):
+    name = file.filename or 'audio.wav'
+    data = await read_upload(file)
+    result = await run_in_threadpool(analyze_locked, data, name)
+    return {'success': True, 'decision': await run_in_threadpool(verify_identity, data, name, claimed_speaker_id), 'deepfake_analysis': result['analysis']}
+
+
+@app.websocket('/api/telephony/ws')
+async def telephony(websocket: WebSocket):
+    # Carrier integration retained behind an explicit deployment switch and server-side key.
+    key = os.getenv('VOICEGUARD_API_KEY', '')
+    supplied = websocket.headers.get('x-api-key', '')
+    if os.getenv('VOICEGUARD_ENABLE_TELEPHONY') != 'true' or not key or not hmac.compare_digest(key, supplied):
+        await websocket.close(code=1008, reason='Carrier streaming requires configuration and authentication.')
+        return
+    from api.telephony import handle_telephony_websocket
+    from core.risk_engine import RiskEngine
+    engine = require_pipeline()
+    await handle_telephony_websocket(websocket, engine.baseline, engine.deep, RiskEngine())
+
+
+@app.get('/')
+def index():
+    return FileResponse(ROOT / 'index.html')
+
+
+@app.get('/{asset}')
+def static_asset(asset: str):
+    if asset not in {'styles.css', 'script.js', 'app.js', 'core-visual.js', 'recorder-worklet.js'}:
+        raise HTTPException(404, 'Not found.')
+    return FileResponse(ROOT / asset, media_type='text/css' if asset.endswith('.css') else 'application/javascript')
