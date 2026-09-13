@@ -24,15 +24,12 @@ def decode_mulaw_byte_chunk(mulaw_bytes: bytes) -> np.ndarray:
     """
     Decodes 8-bit G.711 μ-law PCM audio bytes to float32 samples.
     """
-    # G.711 μ-law expansion
-    raw_int8 = np.frombuffer(mulaw_bytes, dtype=np.uint8)
-    # μ-law inversion
-    mu = 255.0
-    sign = np.where(raw_int8 < 128, -1.0, 1.0)
-    # Quantized magnitude [0, 127]
-    quant = np.where(raw_int8 < 128, 127 - raw_int8, raw_int8 - 128) / 127.0
-    expanded = sign * (1.0 / mu) * ((1.0 + mu) ** quant - 1.0)
-    return expanded.astype(np.float32)
+    raw = np.frombuffer(mulaw_bytes, dtype=np.uint8)
+    u = np.bitwise_not(raw).astype(np.int32)
+    magnitude = (((u & 15) << 3) + 132) << ((u >> 4) & 7)
+    pcm = np.where((u & 128) != 0, 132 - magnitude, magnitude - 132)
+    return (pcm / 32768.0).astype(np.float32)
+
 
 
 class TelephonyCallSession:
@@ -58,7 +55,9 @@ class TelephonyCallSession:
         Decodes incoming base64 μ-law payload, resamples from 8kHz to 16kHz,
         and triggers multi-factor forensic evaluation once buffer is full.
         """
-        raw_bytes = base64.b64decode(mulaw_payload_b64)
+        if len(mulaw_payload_b64) > 64000:
+            raise ValueError("Carrier frame exceeds limit")
+        raw_bytes = base64.b64decode(mulaw_payload_b64, validate=True)
         audio_8k = decode_mulaw_byte_chunk(raw_bytes)
 
         # Resample from 8kHz to 16kHz
@@ -74,8 +73,8 @@ class TelephonyCallSession:
 
             # Run models
             t0 = time.time()
-            base_res = self.baseline_model.predict(analysis_window) if self.baseline_model else {"synthetic_probability": 0.5}
-            deep_res = self.deep_model.predict(analysis_window) if self.deep_model else {"synthetic_probability": 0.5}
+            base_res = self.baseline_model.predict(analysis_window) if self.baseline_model else {}
+            deep_res = self.deep_model.predict(analysis_window) if self.deep_model else {}
             sig = self.baseline_model.feature_extractor.compute_forensic_signals(analysis_window) if self.baseline_model else {}
 
             risk = self.risk_engine.evaluate(deep_res, base_res, sig, audio_duration=len(analysis_window) / self.target_sr)
@@ -95,7 +94,7 @@ class TelephonyCallSession:
                 "risk_level": risk["risk_level"],
                 "synthetic_probability": risk["synthetic_probability"],
                 "threat_detected": is_threat,
-                "recommended_action": "INTERCEPT_OR_TERMINATE" if is_threat else "ALLOW_CALL_CONTINUE",
+                "recommended_action": "SECONDARY_VERIFICATION_REQUIRED",
                 "advisory": risk["advisory"]["title"],
             }
         return None
@@ -111,6 +110,9 @@ async def handle_telephony_websocket(websocket: WebSocket, baseline_model, deep_
     try:
         while True:
             raw_text = await websocket.receive_text()
+            if len(raw_text) > 70000:
+                await websocket.close(code=1009)
+                return
             data = json.loads(raw_text)
             event = data.get("event")
 
