@@ -31,3 +31,13 @@ class TelephonyDegradationPipeline:
         for start in range(0,len(output),frame):
             if rng.random()<packet_loss_rate: output[start:start+frame]=0
         return output
+
+
+class OODBenchmarkSuite:
+    """Out-of-distribution benchmark evaluator for telephony and adversarial perturbations."""
+    def __init__(self, baseline_model=None, deep_model=None, risk_engine=None):
+        self.baseline_model = baseline_model
+        self.deep_model = deep_model
+        self.risk_engine = risk_engine
+        self.degrader = TelephonyDegradationPipeline()
+
