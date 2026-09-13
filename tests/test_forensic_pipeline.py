@@ -88,17 +88,17 @@ def test_missing_models_never_yield_genuine():
 def test_language_unavailable_is_not_guessed(monkeypatch):
     monkeypatch.delenv('VOICEGUARD_LANGUAGE_MODEL',raising=False)
     d=LanguageDetector().detect(np.ones(SR*4,dtype=np.float32))
-    assert d['status']=='unavailable' and d['languages']==[]
+    assert d['status']=='insufficient_evidence' and d['languages']==[]
 
 
 def test_language_backend_mixed_windows_without_transcription():
     d=object.__new__(LanguageDetector)
     class Model:
         def detect_language(self,y):
-            code='hi' if y[0]==1 else 'bn'
+            code='hi' if y[0]>.5 else 'bn'
             return code,.8,[(code,.8),('en',.2)]
-    d.model=Model();r=d.detect(np.r_[np.ones(SR*12),np.zeros(SR*12)].astype(np.float32))
-    assert r['label']=='bn + hi'
+    d.model=Model();r=d.detect((np.r_[np.ones(SR*12),np.zeros(SR*12)] + np.random.default_rng(42).normal(0,.01,SR*24)).astype(np.float32))
+    assert set(r['label'].split(' + '))=={'bn','hi'}
     assert [s['start'] for s in r['segments']]==[0,12]
 
 

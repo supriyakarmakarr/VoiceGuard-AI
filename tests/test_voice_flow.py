@@ -79,112 +79,28 @@ def test_quiet_microphone_normalization(client):
     assert d['analysis']['risk_score'] is not None
 
 
-def test_hindi_live_voice_detection(client):
-    """Hindi live speech should produce evaluated risk and Hindi language label."""
-    speech = generate_human_speech_sample(duration=2.0)
-    wav_bytes = make_wav(speech)
 
-    r = client.post(
-        '/api/analyze',
-        data={'transcript': 'नमस्ते मेरा नाम सुप्रियो है और यह मेरी आवाज़ है', 'language': 'hi'},
-        files={'file': ('live_hindi.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['analysis']['risk_level'] in ('LOW', 'MEDIUM', 'HIGH')
-    assert d['language']['label'] == 'hi'
-    assert d['language']['status'] == 'estimated'
-
-
-def test_bengali_live_voice_detection(client):
-    """Bengali live speech should produce evaluated risk and Bengali language label."""
-    speech = generate_human_speech_sample(duration=2.0)
-    wav_bytes = make_wav(speech)
-
-    r = client.post(
-        '/api/analyze',
-        data={'transcript': 'নমস্কার কেমন আছেন আপনারা', 'language': 'bn'},
-        files={'file': ('live_bengali.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['language']['label'] == 'bn'
-    assert d['language']['status'] == 'estimated'
-
-
-def test_live_mic_with_ambient_noise_not_insufficient_evidence(client):
-    """Real microphone input with background noise should be evaluated without returning INSUFFICIENT_EVIDENCE."""
-    t = np.linspace(0, 2.5, int(2.5 * SR))
-    speech = np.zeros_like(t)
-    speech[int(0.4*SR):int(1.9*SR)] = 0.25 * np.sin(2 * np.pi * 180 * np.linspace(0, 1.5, int(1.5*SR)))
-    noise = 0.02 * np.random.randn(len(t))
-    y = (speech + noise).astype(np.float32)
-    wav_bytes = make_wav(y)
-
-    r = client.post(
-        '/api/analyze',
-        data={'transcript': 'Testing live speech on microphone with room noise', 'language': 'en'},
-        files={'file': ('live_mic_ambient.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['analysis']['risk_level'] in ('LOW', 'MEDIUM', 'HIGH')
-    assert d['analysis']['risk_level'] != 'INSUFFICIENT_EVIDENCE'
-    assert d['language']['label'] == 'en'
-
-
-def test_hindi_transliterated_and_acoustic_detection(client):
-    """Hinglish transliterated speech should detect Hindi."""
-    speech = generate_human_speech_sample(duration=2.0)
-    wav_bytes = make_wav(speech)
-
-    r = client.post(
-        '/api/analyze',
-        data={'transcript': 'namaste aap kaise ho mera naam VoiceGuard hai'},
-        files={'file': ('hinglish_voice.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['language']['label'] == 'hi'
-    assert d['language']['status'] == 'estimated'
-
-
-def test_bengali_transliterated_and_acoustic_detection(client):
-    """Banglish transliterated speech should detect Bengali."""
-    speech = generate_human_speech_sample(duration=2.0)
-    wav_bytes = make_wav(speech)
-
-    r = client.post(
-        '/api/analyze',
-        data={'transcript': 'nomoshkar kemon achhen ami bhalo achi'},
-        files={'file': ('banglish_voice.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['language']['label'] == 'bn'
-    assert d['language']['status'] == 'estimated'
-
-
-def test_live_voice_without_transcript_not_insufficient_evidence(client):
-    """Live voice recorded without any transcript or language hint must evaluate risk and language."""
-    speech = generate_human_speech_sample(duration=2.0)
-    wav_bytes = make_wav(speech)
-
-    r = client.post(
-        '/api/analyze',
-        files={'file': ('no_transcript_voice.wav', wav_bytes, 'audio/wav')}
-    )
-    assert r.status_code == 200, r.text
-    d = r.json()
-    assert d['analysis']['risk_score'] is not None
-    assert d['analysis']['risk_level'] in ('LOW', 'MEDIUM', 'HIGH')
-    assert d['analysis']['risk_level'] != 'INSUFFICIENT_EVIDENCE'
-    assert d['language']['label'] in ('hi', 'bn', 'en')
-    assert d['language']['status'] == 'estimated'
-
-
+@pytest.mark.parametrize('transcript,hint', [
+    ('नमस्ते मेरा नाम सुप्रियो है', 'hi'),
+    ('নমস্কার কেমন আছেন', 'bn'),
+    ('namaste aap kaise ho', 'hi'),
+    ('nomoshkar kemon achhen', 'bn'),
+    ('Hello this is my voice', 'en'),
+    ('', ''),
+])
+def test_audio_language_is_independent_of_transcript_and_ui(client, monkeypatch, transcript, hint):
+    # Generated test signals are not real Hindi/Bengali speech. The audio-model
+    # response is mocked explicitly to test metadata isolation at the API boundary.
+    class AudioModel:
+        def detect_language(self, audio):
+            return 'en', .96, [('en', .96), ('hi', .02), ('bn', .02)]
+    monkeypatch.setattr(server.pipeline.language, 'model', AudioModel())
+    speech = generate_human_speech_sample(duration=3.0)
+    response = client.post('/api/analyze', data={'transcript': transcript, 'language': hint},
+                           files={'file': ('metadata-isolation.wav', make_wav(speech), 'audio/wav')})
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result['language']['label'] == 'en'
+    assert result['language']['source'] == 'whisper_audio'
+    assert result['transcript'] == transcript
+    assert result['analysis']['risk_score'] is not None

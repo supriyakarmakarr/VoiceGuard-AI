@@ -130,3 +130,12 @@ node --check recorder-worklet.js
 Regression coverage includes silence, short clips, corrupt/unsupported/non-finite/oversized/overlong audio, model availability, language adapter behavior, timeline gaps, overlap labels, report lifecycle, authentication, origin rejection, path containment and known G.711 decode values. Browser validation covers real sample analysis, evidence expansion, speaker playback, report download, and responsive layouts. See `VALIDATION.md` for the actual run results and remaining limits.
 
 The project’s existing MIT license is retained.
+
+
+## September 14: audio-language and pretrained speaker update
+
+Current detection behavior and verification supersede older hybrid-language and acoustic-only descriptions above. See `DETECTION-VALIDATION.md`.
+
+Multilingual Whisper now detects audio language independently of UI/transcription language. Pretrained sherpa-onnx segmentation and multilingual speaker embeddings provide estimated voice counts and overlap-aware timelines. Individual concern indices use isolated speech. Unknown count is never replaced with one person.
+
+For a fresh copy, run `python scripts/setup_speech_models.py --install-runtime` after installing the main requirements, then restart `python main.py`. Models are already installed in this working copy. The acoustic core rotates continuously, slows on hover and respects reduced motion.

@@ -39,6 +39,7 @@ const state = {
   interimTranscript: "",
   speechRec: null,
   currentLang: "",
+  speechLanguage: "en",
   activeVoiceFrames: 0,
 };
 const palette = [
@@ -392,7 +393,7 @@ async function runAnalysis() {
     const form = new FormData();
     form.append("file", state.file);
     if (state.transcript) form.append("transcript", state.transcript);
-    if (state.currentLang) form.append("language", state.currentLang);
+
     const created = await api("/api/jobs", { method: "POST", body: form });
     state.job = created.job_id;
     state.sessionJobs.add(state.job);
@@ -511,9 +512,10 @@ function renderResult(result) {
   $("confidence").textContent = "Acoustic signal evaluation complete";
   $("summarySpeakers").textContent =
     result.diarization.num_speakers == null
-      ? "1 estimated"
+      ? "Not determined"
       : `${result.diarization.num_speakers} estimated`;
   $("summaryLanguage").textContent = langText(result.language);
+  $("languageEvidence").textContent = result.language.reason || "Language evidence unavailable.";
   $("summaryQuality").textContent = result.quality.label;
   $("summaryDuration").textContent = fmt(result.duration_seconds);
   $("resultReason").textContent =
@@ -544,7 +546,8 @@ function renderResult(result) {
 function renderTimeline(result) {
   const d = result.diarization;
   $("timelineBadge").textContent =
-    d.method === "pyannote" ? "ESTIMATED SPEAKERS" : "ACOUSTIC ESTIMATE";
+    ["pyannote", "pretrained_onnx"].includes(d.method) ? "PRETRAINED SPEAKER ESTIMATE" : "COUNT NOT VERIFIED";
+  renderSpeakerOverview(d);
   $("timelineEmpty").hidden = true;
   $("timelineResult").hidden = false;
   $("diarizationNote").textContent = (d.limitations || []).join(" ");
@@ -580,11 +583,43 @@ function renderTimeline(result) {
   if (d.speakers?.length) selectSpeaker(d.speakers[0]);
   else
     $("speakerDetail").replaceChildren(
-      el("p", "subtle", "Single speaker detected or overall voice analyzed."),
+      el("p", "subtle", "No individual speaker could be attributed. Review the overall audio findings."),
     );
 }
 
+
+// Browser transcription language is explicitly separate from UI and detected language.
+$("speechLanguage").onchange = () => {
+  state.speechLanguage = $("speechLanguage").value;
+  if (state.recording) {
+    stopSpeechRecognition();
+    startSpeechRecognition();
+  }
+};
+
+function renderSpeakerOverview(d) {
+  const overview = $("speakerOverview");
+  overview.replaceChildren();
+  $("speakerCountTitle").textContent = d.num_speakers == null
+    ? "Speaker count could not be determined"
+    : `${d.num_speakers} distinct voice${d.num_speakers === 1 ? "" : "s"} estimated`;
+  for (const speaker of d.speakers || []) {
+    const button = el("button", "speaker-overview-card");
+    button.setAttribute("aria-label", `Inspect ${speaker.speaker_id}`);
+    const score = speaker.analysis?.risk_score;
+    button.append(el("span", "speaker-overview-name", speaker.speaker_id),
+      el("strong", "", score == null ? "Not enough evidence" : `${Number(score).toFixed(1)} / 100`),
+      el("span", "subtle", score == null ? "Individual risk unavailable" : `${speaker.analysis.risk_level} concern · uncalibrated`),
+      el("small", "", `${speaker.speaking_time_sec}s active · ${speaker.isolated_speech_seconds ?? "—"}s isolated`));
+    button.onclick = () => selectSpeaker(speaker);
+    overview.append(button);
+  }
+}
+
 function selectSpeaker(s) {
+  for (const button of $("speakerOverview").children) {
+    button.setAttribute("aria-pressed", String(button.querySelector(".speaker-overview-name").textContent === s.speaker_id));
+  }
   for (const lane of $("speakerLanes").children) {
     const selected = lane.dataset.speaker === s.speaker_id;
     lane.classList.toggle("selected", selected);
@@ -610,6 +645,8 @@ function selectSpeaker(s) {
     summary = el("div", "summary-grid");
   for (const [label, value] of [
     ["SPEAKING TIME", `${s.speaking_time_sec?.toFixed(1) || "—"} sec`],
+    ["ISOLATED AUDIO", `${s.isolated_speech_seconds ?? "—"} sec`],
+    ["OVERLAPPING", `${s.overlap_seconds ?? "—"} sec`],
     ["LANGUAGE", langText(s.language)],
     ["CONFIDENCE", s.analysis?.confidence_label || "Evaluated"],
     ["VOCAL STATE", s.vocal_state?.label || "Measured"],
@@ -823,6 +860,8 @@ function downloadReport() {
               `<article><h3>${esc(s.speaker_id)}</h3>${pairs([
                 ["Concern index", riskText(s.analysis)],
                 ["Speaking duration", `${s.speaking_time_sec} seconds`],
+                ["Isolated speech used for risk", `${s.isolated_speech_seconds ?? "Unavailable"} seconds`],
+                ["Overlap excluded from risk", `${s.overlap_seconds ?? "Unavailable"} seconds`],
                 ["Confidence", s.analysis.confidence_label],
                 ["Language", langText(s.language)],
                 ["Vocal state", s.vocal_state?.label || "Measured"],
@@ -926,11 +965,11 @@ function startSpeechRecognition() {
     rec.interimResults = true;
     rec.maxAlternatives = 1;
     rec.lang =
-      state.currentLang === "hi"
+      state.speechLanguage === "hi"
         ? "hi-IN"
-        : state.currentLang === "bn"
+        : state.speechLanguage === "bn"
           ? "bn-IN"
-          : state.currentLang === "en"
+          : state.speechLanguage === "en"
             ? "en-US"
             : (navigator.language || "en-US");
     rec.onresult = (e) => {
@@ -1134,7 +1173,7 @@ async function streamWindow() {
       form = new FormData();
     form.append("file", blob, "live-window.wav");
     if (state.transcript) form.append("transcript", state.transcript);
-    if (state.currentLang) form.append("language", state.currentLang);
+
     const r = await api("/api/analyze-chunk", {
       method: "POST",
       body: form,
@@ -1425,10 +1464,7 @@ for (const b of document.querySelectorAll("[data-lang]"))
     }
     for (const n of document.querySelectorAll("[data-lang]"))
       n.setAttribute("aria-pressed", String(n === b));
-    if (state.speechRec) {
-      state.speechRec.lang =
-        lang === "hi" ? "hi-IN" : lang === "bn" ? "bn-IN" : "en-US";
-    }
+
     notify(
       lang === "en"
         ? "Primary controls set to English."

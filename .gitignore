@@ -72,3 +72,8 @@ Thumbs.db
 models/speaker_profiles/
 .env.*
 !.env.example
+
+.runtime/
+.cache/
+models/pretrained/
+speaker-embedding-multilingual.onnx

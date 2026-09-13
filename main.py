@@ -26,6 +26,9 @@ if PROJECT_ROOT not in sys.path:
 
 # Change working directory to project root
 os.chdir(PROJECT_ROOT)
+# Keep audio JIT caches inside the project, including restricted desktop sessions.
+os.environ.setdefault('NUMBA_CACHE_DIR', os.path.join(PROJECT_ROOT, '.cache', 'numba'))
+os.makedirs(os.environ['NUMBA_CACHE_DIR'], exist_ok=True)
 
 import uvicorn
 
