@@ -133,6 +133,7 @@ class DeepLearningVoiceClassifier:
     """
 
     def __init__(self, model_path: str = None, device: str = None):
+        self._weights_ready = False
         self.preprocessor = AudioPreprocessor()
         self.feature_extractor = FeatureExtractor()
         if device is None:
@@ -275,6 +276,7 @@ class DeepLearningVoiceClassifier:
             "device": str(self.device),
         }
         print(f"Deep Learning CNN Trained -> Val Accuracy: {best_acc*100:.2f}%")
+        self._weights_ready = True
         return self.metrics
 
     def predict(self, audio_input) -> dict:
@@ -282,6 +284,8 @@ class DeepLearningVoiceClassifier:
         Runs deep learning inference on audio input (file, bytes, or numpy array).
         Returns synthetic probability and model confidence.
         """
+        if not self._weights_ready:
+            raise RuntimeError("Trained weights are required before CNN inference.")
         self.model.eval()
         if not isinstance(audio_input, np.ndarray) or len(audio_input.shape) == 0:
             proc = self.preprocessor.process(audio_input)
@@ -321,6 +325,7 @@ class DeepLearningVoiceClassifier:
         """Loads PyTorch model weights from disk."""
         checkpoint = torch.load(model_path, map_location=self.device)
         self.model.load_state_dict(checkpoint["state_dict"])
+        self._weights_ready = True
         self.metrics = checkpoint.get("metrics", {})
         self.model_path = model_path
         self.model.eval()
