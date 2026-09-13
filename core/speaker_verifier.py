@@ -129,6 +129,9 @@ class SpeakerVerifier:
         """
         Enrolls a new trusted speaker voiceprint profile.
         """
+        import re
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", speaker_id):
+            raise ValueError("Invalid speaker ID")
         proc = self.preprocessor.process(audio_input)
         embedding = self.extract_voiceprint_embedding(proc["audio"])
 
@@ -186,13 +189,14 @@ class SpeakerVerifier:
         is_match = similarity >= self.threshold
 
         return {
-            "verified": is_match,
+            "verified": False,
+            "acoustic_threshold_match": is_match,
             "similarity_score": similarity,
             "threshold": self.threshold,
             "claimed_speaker_id": claimed_speaker_id,
             "claimed_name": ref_profile.get("name", claimed_speaker_id),
             "claimed_role": ref_profile.get("role", "Executive"),
-            "confidence_pct": round(max(0.0, min(100.0, (similarity / self.threshold) * 85.0)), 1),
+            "confidence_pct": None,
         }
 
     def evaluate_dual_factor_transaction(
@@ -205,44 +209,10 @@ class SpeakerVerifier:
         Dual-Factor Security Decision:
         Combines AI Synthetic Deepfake Risk + Biometric Voiceprint Verification.
         """
-        synth_prob = deepfake_risk_result.get("synthetic_probability", 0.5)
-        is_synthetic = synth_prob >= 0.50
-
-        if not claimed_speaker_id:
-            # Only synthetic detection requested
-            return {
-                "transaction_decision": "BLOCKED" if is_synthetic else "APPROVED_WITHOUT_SPEAKER_CHECK",
-                "reason": "Synthetic voice clone detected" if is_synthetic else "Voice appears authentic (no claimed speaker)",
-                "speaker_check_performed": False,
-            }
-
-        # Run speaker verification
-        verification = self.verify_claimed_identity(audio_input, claimed_speaker_id)
-        is_matched = verification.get("verified", False)
-        similarity = verification.get("similarity_score", 0.0)
-
-        if is_synthetic:
-            decision = "BLOCKED_AI_IMPERSONATION"
-            reason = f"CRITICAL: High-risk synthetic voice clone mimicking {verification.get('claimed_name')}! Transaction blocked."
-            status_color = "#ef4444"
-        elif not is_matched:
-            decision = "BLOCKED_VOICE_MISMATCH"
-            reason = f"REJECTED: Natural voice detected, but biometric voiceprint does NOT match claimed identity ({verification.get('claimed_name')}). Possible human imposter."
-            status_color = "#f59e0b"
-        else:
-            decision = "AUTHORIZED_DUAL_FACTOR"
-            reason = f"AUTHORIZED: Both authentic voice dynamics and biometric voiceprint confirmed for {verification.get('claimed_name')}."
-            status_color = "#10b981"
-
-        return {
-            "transaction_decision": decision,
-            "authorized": decision == "AUTHORIZED_DUAL_FACTOR",
-            "reason": reason,
-            "status_color": status_color,
-            "speaker_check_performed": True,
-            "verification_details": verification,
-            "deepfake_risk_score": deepfake_risk_result.get("risk_score", 50.0),
-        }
+        verification = self.verify_claimed_identity(audio_input, claimed_speaker_id) if claimed_speaker_id else None
+        return {"transaction_decision": "SECONDARY_VERIFICATION_REQUIRED", "authorized": False,
+                "speaker_check_performed": bool(claimed_speaker_id), "verification_details": verification,
+                "reason": "Acoustic similarity is exploratory. Independent identity verification is required."}
 
     def load_all_profiles(self):
         """Loads all enrolled JSON profiles from disk."""
