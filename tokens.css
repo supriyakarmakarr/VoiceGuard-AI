@@ -1,0 +1,34 @@
+/* VoiceGuard · warm paper, indigo ink, restrained spectral accents */
+:root {
+  --color-paper: oklch(97% .009 86);
+  --color-surface: oklch(99% .004 86);
+  --color-ink: oklch(29% .041 274);
+  --color-muted: oklch(47% .025 270);
+  --color-accent: oklch(47% .13 277);
+  --color-accent-deep: oklch(39% .115 277);
+  --color-lavender: oklch(93% .033 285);
+  --color-blue: oklch(94% .025 245);
+  --color-peach: oklch(94% .037 58);
+  --color-sage: oklch(93% .027 155);
+  --color-line: oklch(87% .016 275);
+  --color-green: oklch(44% .065 166);
+  --color-amber: oklch(48% .09 64);
+  --color-red: oklch(48% .11 23);
+  --color-shadow: oklch(35% .05 275 / .10);
+  --color-header: oklch(97% .009 86 / .94);
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  --font-body: 'Segoe UI Variable Text', 'Segoe UI', Arial, sans-serif;
+  --font-mono: Consolas, 'SFMono-Regular', monospace;
+  --space-sm: 16px; --space-md: 24px; --space-lg: 32px;
+  --space-xl: 48px; --space-section: clamp(64px, 7vw, 104px);
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-in: cubic-bezier(.4,0,1,1);
+  --ease-in-out: cubic-bezier(.4,0,.2,1);
+  --dur-short: 200ms; --dur-reveal: 620ms;
+  --ink: var(--color-ink); --muted: var(--color-muted);
+  --blue: var(--color-accent); --blue-deep: var(--color-accent-deep);
+  --blue-light: var(--color-lavender); --surface: var(--color-paper);
+  --line: var(--color-line); --white: var(--color-surface);
+  --green: var(--color-green); --amber: var(--color-amber); --red: var(--color-red);
+  --radius: 16px; --shadow: 0 16px 38px -24px var(--color-shadow);
+}
