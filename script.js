@@ -1061,7 +1061,9 @@ async function startRecording() {
     $("recordButton").textContent = "Stop & Analyze Voice ■";
     $("recordButton").classList.add("recording");
     $("liveStatus").textContent = "● LISTENING";
+    $("liveStatus").classList.add("active-status");
     $("liveRisk").textContent = "Gathering first window…";
+    $("livePanel")?.classList.add("recording-active");
     const p = $("liveTranscriptText");
     if (p) {
       p.textContent =
@@ -1074,7 +1076,9 @@ async function startRecording() {
     state.liveTimer = setInterval(streamWindow, 3500);
     state.recordTimer = setInterval(() => {
       const seconds = (Date.now() - state.recordStart) / 1000;
-      $("recordTimer").textContent = fmt(seconds);
+      const el = $("recordTimer");
+      el.textContent = fmt(seconds);
+      el.classList.add("ticking");
       if (seconds >= 120) stopRecording();
     }, 250);
     window.voiceCore?.setActive(true);
@@ -1129,6 +1133,9 @@ async function streamWindow() {
     $("liveVocal").textContent = r.vocal_state?.label || "Measured";
     $("liveStatus").textContent = "● STREAMING · WINDOW ANALYZED";
   } catch (e) {
+    if (e.name !== "AbortError") {
+      console.warn("[VoiceGuard] Live window analysis error:", e.message || e);
+    }
     if (state.recording && token === state.recordToken) {
       $("liveRisk").textContent = "Monitoring live audio";
       $("liveStatus").textContent = "● LISTENING";
@@ -1169,10 +1176,14 @@ async function cleanupRecording() {
   $("recordButton").textContent = "Enable microphone ◉";
   $("recordButton").classList.remove("recording");
   $("liveStatus").textContent = "MICROPHONE OFF";
+  $("liveStatus").classList.remove("active-status");
+  $("livePanel")?.classList.remove("recording-active");
+  const timerEl = $("recordTimer");
+  if (timerEl) timerEl.classList.remove("ticking");
   $("voiceActivityDot")?.classList.remove("active");
   $("liveVoiceBar")?.classList.remove("speaking");
   const txt = $("voiceActivityText");
-  if (txt) txt.textContent = "Microphone off. Recording ready.";
+  if (txt) txt.textContent = "Awaiting speech input…";
 }
 
 async function stopRecording() {
@@ -1217,12 +1228,14 @@ function drawLive() {
     freq = new Uint8Array(state.analyser.frequencyBinCount);
   state.analyser.getByteTimeDomainData(wave);
   state.analyser.getByteFrequencyData(freq);
+
+  // Energy & amplitude
   let energy = 0;
   for (const x of wave) energy += ((x - 128) / 128) ** 2;
   const db = 20 * Math.log10(Math.sqrt(energy / wave.length) + 1e-9);
   $("liveAmplitude").textContent = `${Math.max(-96, db).toFixed(1)} dBFS`;
 
-  // Voice activity detection based on audio energy
+  // Voice activity detection
   const isSpeaking = db > -46;
   const dot = $("voiceActivityDot"),
     bar = $("liveVoiceBar"),
@@ -1237,44 +1250,98 @@ function drawLive() {
     if (txt) txt.textContent = "Listening for voice input…";
   }
 
+  // Feed 3D core with sampled waveform
   window.voiceCore?.setSignal(
     Array.from(
       wave.filter((_, i) => i % 8 === 0),
       (v) => (v - 128) / 128,
     ),
   );
-  for (const [id, data, bars] of [
-    ["liveWave", wave, false],
-    ["liveSpectrum", freq, true],
-  ]) {
-    const c = $(id),
-      ctx = c.getContext("2d");
-    c.width = Math.max(1, c.clientWidth * devicePixelRatio);
-    c.height = (bars ? 60 : 115) * devicePixelRatio;
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.strokeStyle = isSpeaking ? "#d97706" : "#6089bb";
-    ctx.fillStyle = isSpeaking ? "rgba(245,158,11,0.65)" : "#9bb7db";
-    ctx.lineWidth = 1.5 * devicePixelRatio;
-    if (bars) {
-      for (let i = 0; i < 48; i++) {
-        const value = data[Math.floor((i * data.length) / 48)] / 255;
-        ctx.fillRect(
-          (i * c.width) / 48,
-          c.height * (1 - value),
-          c.width / 48 - 3,
-          value * c.height,
-        );
-      }
-    } else {
-      ctx.beginPath();
-      for (let i = 0; i < data.length; i++) {
-        const x = (i * c.width) / data.length,
-          y = (data[i] / 255) * c.height;
-        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-      }
-      ctx.stroke();
-    }
+
+  // ── Waveform canvas ────────────────────────────────────────────────────────
+  const wc = $("liveWave"),
+    wctx = wc.getContext("2d");
+  wc.width = Math.max(1, wc.clientWidth * devicePixelRatio);
+  wc.height = 115 * devicePixelRatio;
+  wctx.clearRect(0, 0, wc.width, wc.height);
+
+  const midY = wc.height / 2;
+
+  // Subtle centre reference line
+  wctx.beginPath();
+  wctx.moveTo(0, midY);
+  wctx.lineTo(wc.width, midY);
+  wctx.strokeStyle = isSpeaking
+    ? "rgba(251,191,36,0.22)"
+    : "rgba(140,170,210,0.18)";
+  wctx.lineWidth = 1 * devicePixelRatio;
+  wctx.stroke();
+
+  // Filled area
+  wctx.beginPath();
+  for (let i = 0; i < wave.length; i++) {
+    const x = (i / wave.length) * wc.width,
+      y = midY + ((wave[i] - 128) / 128) * (wc.height * 0.42);
+    i ? wctx.lineTo(x, y) : wctx.moveTo(x, y);
   }
+  wctx.lineTo(wc.width, midY);
+  wctx.lineTo(0, midY);
+  wctx.closePath();
+  wctx.fillStyle = isSpeaking
+    ? "rgba(245,158,11,0.09)"
+    : "rgba(100,140,200,0.06)";
+  wctx.fill();
+
+  // Waveform stroke with horizontal gradient
+  const wg = wctx.createLinearGradient(0, 0, wc.width, 0);
+  if (isSpeaking) {
+    wg.addColorStop(0, "rgba(217,119,6,0.65)");
+    wg.addColorStop(0.5, "rgba(245,158,11,1)");
+    wg.addColorStop(1, "rgba(217,119,6,0.65)");
+  } else {
+    wg.addColorStop(0, "rgba(100,140,190,0.45)");
+    wg.addColorStop(0.5, "rgba(120,160,210,0.75)");
+    wg.addColorStop(1, "rgba(100,140,190,0.45)");
+  }
+  wctx.beginPath();
+  for (let i = 0; i < wave.length; i++) {
+    const x = (i / wave.length) * wc.width,
+      y = midY + ((wave[i] - 128) / 128) * (wc.height * 0.42);
+    i ? wctx.lineTo(x, y) : wctx.moveTo(x, y);
+  }
+  wctx.strokeStyle = wg;
+  wctx.lineWidth = 1.8 * devicePixelRatio;
+  wctx.lineJoin = "round";
+  wctx.stroke();
+
+  // ── Spectrum canvas ────────────────────────────────────────────────────────
+  const sc = $("liveSpectrum"),
+    sctx = sc.getContext("2d");
+  sc.width = Math.max(1, sc.clientWidth * devicePixelRatio);
+  sc.height = 60 * devicePixelRatio;
+  sctx.clearRect(0, 0, sc.width, sc.height);
+
+  // Shared vertical gradient for all bars
+  const sg = sctx.createLinearGradient(0, 0, 0, sc.height);
+  if (isSpeaking) {
+    sg.addColorStop(0, "rgba(251,191,36,0.88)");
+    sg.addColorStop(0.55, "rgba(245,158,11,0.92)");
+    sg.addColorStop(1, "rgba(180,83,9,0.98)");
+  } else {
+    sg.addColorStop(0, "rgba(160,200,235,0.55)");
+    sg.addColorStop(1, "rgba(90,130,180,0.78)");
+  }
+  sctx.fillStyle = sg;
+
+  const nbars = 48,
+    bw = sc.width / nbars;
+  for (let i = 0; i < nbars; i++) {
+    const v = freq[Math.floor((i * freq.length) / nbars)] / 255;
+    if (v < 0.02) continue;
+    const bh = v * sc.height;
+    sctx.fillRect(i * bw + 1, sc.height - bh, Math.max(1, bw - 2), bh);
+  }
+
   state.liveFrame = requestAnimationFrame(drawLive);
 }
 
