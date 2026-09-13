@@ -1,0 +1,5 @@
+# Optional local multilingual language model adapter.
+faster-whisper>=1.1,<2
+# Optional pretrained overlapping-speaker diarization. Install separately if its
+# dependency resolver requires a newer NumPy/numba stack; see README compatibility notes.
+pyannote.audio>=4,<5
