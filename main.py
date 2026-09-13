@@ -36,4 +36,4 @@ if __name__ == "__main__":
     print("[*] Starting Web Server: http://127.0.0.1:8000")
     print("[*] Press CTRL+C to stop the server.")
     print("=" * 70)
-    uvicorn.run("api.server:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("api.server:app", host="127.0.0.1", port=8000, reload=os.getenv("VOICEGUARD_DEV_RELOAD", "false").lower() == "true")
