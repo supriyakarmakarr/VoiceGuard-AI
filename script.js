@@ -161,6 +161,14 @@ $("navigation").onclick = (e) => {
   }
 };
 
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && $("navigation").classList.contains("open")) {
+    $("navigation").classList.remove("open");
+    $("menuToggle").setAttribute("aria-expanded", "false");
+    $("menuToggle").focus();
+  }
+});
+
 function tab(name) {
   if (state.recording && name === "upload") {
     notify("Stop the microphone before changing audio source.");
@@ -343,6 +351,7 @@ async function samples() {
 
 function busy(value) {
   state.busy = value;
+  $("analyzeButton").setAttribute("aria-busy", String(value));
   $("analyzeButton").disabled = value || !state.file;
   $("removeFile").disabled = value;
   $("dropZone").disabled = value;
@@ -353,7 +362,9 @@ function busy(value) {
 
 function stage(index) {
   $("analysisStage").textContent = stages[index] || stages[0];
-  $("progressLine").style.width = `${((index + 1) / stages.length) * 95}%`;
+  const progress = Math.round(((index + 1) / stages.length) * 95);
+  $("progressLine").style.transform = `scaleX(${progress / 100})`;
+  $("progressLine").parentElement.setAttribute("aria-valuenow", String(progress));
   $("stageList").replaceChildren(
     ...stages.map((s, i) => {
       const li = el("li", i < index ? "done" : i === index ? "active" : "");
@@ -403,6 +414,10 @@ async function runAnalysis() {
       );
     if (state.transcript && !result.transcript)
       result.transcript = state.transcript;
+    $("progressLine").style.transform = "scaleX(1)";
+    $("progressLine").parentElement.setAttribute("aria-valuenow", "100");
+    $("analysisStage").textContent = "Evidence ready";
+    if (!reduced.matches) await sleep(220);
     renderResult(result);
     saveHistory(result);
     notify("Analysis complete. Review the forensic evidence and findings.");
@@ -467,12 +482,14 @@ function renderResult(result) {
           ? "#3d796c"
           : "#7991ad";
   $("riskGauge").style.setProperty("--risk-color", color);
-  $("gaugeValue").style.strokeDashoffset = String(
-    477.52 * (1 - (r.risk_score ?? 0) / 100),
-  );
+  $("gaugeValue").style.strokeDashoffset = "477.52";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (state.result === result) $("gaugeValue").style.strokeDashoffset = String(
+      477.52 * (1 - (r.risk_score ?? 0) / 100));
+  }));
   $("gaugeScore").textContent =
     r.risk_score == null ? "—" : String(Math.round(r.risk_score));
-  if (r.risk_score !== null && !reduced.matches) {
+  if (r.risk_score != null && !reduced.matches) {
     const start = performance.now();
     const tick = (now) => {
       if (state.result !== result) return;
@@ -1222,10 +1239,15 @@ async function stopRecording() {
 $("recordButton").onclick = () =>
   state.recording ? stopRecording() : startRecording();
 
-function drawLive() {
+function drawLive(now = performance.now()) {
   if (!state.recording || !state.analyser) return;
-  const wave = new Uint8Array(state.analyser.fftSize),
-    freq = new Uint8Array(state.analyser.frequencyBinCount);
+  if (document.hidden || now - (state.lastLiveDraw || 0) < (reduced.matches ? 150 : 33)) {
+    state.liveFrame = requestAnimationFrame(drawLive);
+    return;
+  }
+  state.lastLiveDraw = now;
+  const wave = state.waveBuffer || (state.waveBuffer = new Uint8Array(state.analyser.fftSize)),
+    freq = state.frequencyBuffer || (state.frequencyBuffer = new Uint8Array(state.analyser.frequencyBinCount));
   state.analyser.getByteTimeDomainData(wave);
   state.analyser.getByteFrequencyData(freq);
 
@@ -1261,8 +1283,10 @@ function drawLive() {
   // ── Waveform canvas ────────────────────────────────────────────────────────
   const wc = $("liveWave"),
     wctx = wc.getContext("2d");
-  wc.width = Math.max(1, wc.clientWidth * devicePixelRatio);
-  wc.height = 115 * devicePixelRatio;
+  const ratio = Math.min(2, devicePixelRatio || 1);
+  const waveWidth = Math.max(1, Math.round(wc.clientWidth * ratio));
+  if (wc.width !== waveWidth) wc.width = waveWidth;
+  if (wc.height !== 115 * ratio) wc.height = 115 * ratio;
   wctx.clearRect(0, 0, wc.width, wc.height);
 
   const midY = wc.height / 2;
@@ -1317,8 +1341,9 @@ function drawLive() {
   // ── Spectrum canvas ────────────────────────────────────────────────────────
   const sc = $("liveSpectrum"),
     sctx = sc.getContext("2d");
-  sc.width = Math.max(1, sc.clientWidth * devicePixelRatio);
-  sc.height = 60 * devicePixelRatio;
+  const spectrumWidth = Math.max(1, Math.round(sc.clientWidth * ratio));
+  if (sc.width !== spectrumWidth) sc.width = spectrumWidth;
+  if (sc.height !== 60 * ratio) sc.height = 60 * ratio;
   sctx.clearRect(0, 0, sc.width, sc.height);
 
   // Shared vertical gradient for all bars
@@ -1346,8 +1371,9 @@ function drawLive() {
 }
 
 window.addEventListener("pagehide", () => {
-  state.stream?.getTracks().forEach((t) => t.stop());
-  state.context?.close();
+  cleanupRecording();
+  clearTimeout(state.toastTimer);
+  clearTimeout(resizeTimer);
   if (state.url) URL.revokeObjectURL(state.url);
 });
 
@@ -1424,6 +1450,9 @@ if ("IntersectionObserver" in window) {
     },
     { threshold: 0.08 },
   );
+  for (const group of document.querySelectorAll(".workspace-grid,.pipeline-grid,.prevention-grid")) {
+    [...group.children].forEach((n, i) => n.style.setProperty("--reveal-delay", `${Math.min(i % 3, 2) * 70}ms`));
+  }
   document.querySelectorAll(".reveal").forEach((n) => observer.observe(n));
   const nav = new IntersectionObserver(
     (entries) => {
