@@ -343,6 +343,6 @@ def index():
 
 @app.get('/{asset}')
 def static_asset(asset: str):
-    if asset not in {'styles.css', 'script.js', 'app.js', 'core-visual.js', 'recorder-worklet.js'}:
+    if asset not in {'tokens.css', 'styles.css', 'script.js', 'app.js', 'core-visual.js', 'recorder-worklet.js'}:
         raise HTTPException(404, 'Not found.')
     return FileResponse(ROOT / asset, media_type='text/css' if asset.endswith('.css') else 'application/javascript')
