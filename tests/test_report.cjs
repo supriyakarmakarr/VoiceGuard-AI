@@ -1,6 +1,6 @@
 // Exercise the actual report builder with a labeled test fixture and hostile file metadata.
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const source=fs.readFileSync('script.js','utf8'),start=source.indexOf('const escapeHTML='),end=source.indexOf("$('reportButton').onclick=",start);
+const source=fs.readFileSync('script.js','utf8'),start=source.search(/const escapeHTML\s*=/),end=source.search(/\$\(['"]reportButton['"]\)\.onclick\s*=/);
 let blob,clicked=false,removed=false;
 const analysis={risk_score:72,risk_level:'HIGH',confidence_label:'Low-confidence analysis',confidence_basis:'Unvalidated',score_kind:'Concern index',reasoning:['Test fixture'],indicators:[{name:'Test source',score:72,contribution_weight:1,description:'Fixture only'}]};
 const vocal={label:'Uncertain',description:'Acoustic measurements only',features:{pitch_median_hz:180,jitter:null}};
