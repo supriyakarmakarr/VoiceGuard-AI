@@ -1,10 +1,21 @@
 "use strict";
 const $ = (id) => document.getElementById(id),
   reduced = matchMedia("(prefers-reduced-motion: reduce)");
-const API_BASE =
-  location.protocol === "file:" || (location.port && location.port !== "8000")
-    ? "http://127.0.0.1:8000"
-    : "";
+const API_BASE = (window.VOICEGUARD_CONFIG?.API_URL || "").trim().replace(/\/+$/, "") ||
+  ((location.protocol === "file:" ||
+    (["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && location.port !== "8000"))
+    ? "http://127.0.0.1:8000" : "");
+function apiUrl(path) {
+  const localPage = location.protocol === "file:" || ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+  if (!API_BASE && location.hostname.endsWith(".github.io"))
+    throw Error("Backend URL is not configured. Set the API_URL repository variable and redeploy the frontend.");
+  const base = new URL(API_BASE || location.origin);
+  if (!localPage && (base.protocol !== "https:" || ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname)))
+    throw Error("Production API_URL must be the HTTPS address of the deployed backend.");
+  if (!["http:", "https:"].includes(base.protocol) || base.username || base.password || base.search || base.hash)
+    throw Error("API_URL must be an HTTP(S) backend address without credentials, query or fragment.");
+  return base.href.replace(/\/+$/, "") + path;
+}
 const stages = [
   "Reading audio",
   "Detecting speech",
@@ -93,36 +104,32 @@ function clearError() {
 }
 
 async function api(path, options = {}) {
-  const url = path.startsWith("http") ? path : API_BASE + path;
+  const url = apiUrl(path);
+  const controller = new AbortController();
+  const signal = options.signal || controller.signal;
+  const timeout = setTimeout(() => controller.abort(), 90000);
   let response;
   try {
     response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(state.key ? { "X-API-Key": state.key } : {}),
-        ...options.headers,
-      },
+      ...options, signal,
+      headers: { ...(state.key ? { "X-API-Key": state.key } : {}), ...options.headers },
     });
-  } catch {
-    throw Error(
-      "The analysis server did not return a valid response. Start FastAPI and reload.",
-    );
-  }
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw Error(
-      "The analysis server did not return a valid response. Start FastAPI and reload.",
-    );
-  }
-  if (!response.ok)
-    throw Error(
-      typeof data.detail === "string"
-        ? data.detail
-        : `Request failed (${response.status}).`,
-    );
-  return data;
+    let data;
+    try { data = await response.json(); }
+    catch {
+      throw Error(`Backend returned a non-JSON response (HTTP ${response.status}). Check API_URL points to FastAPI and that the backend deployment is healthy.`);
+    }
+    if (!response.ok)
+      throw Error(typeof data.detail === "string" ? data.detail : `Backend request failed (HTTP ${response.status}).`);
+    if (!data || typeof data !== "object" || Array.isArray(data))
+      throw Error("Backend returned an invalid JSON payload. Check the deployed API version.");
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") throw error;
+    if (!response)
+      throw Error(`Could not reach the analysis backend at ${new URL(url).origin}. Check API_URL, backend availability and allowed frontend origins (CORS).`);
+    throw error;
+  } finally { clearTimeout(timeout); }
 }
 
 async function health() {
@@ -137,11 +144,11 @@ async function health() {
       d.status === "ready" ? "#3d796c" : "#eab308";
     $("capabilityDetails").textContent =
       `CNN: ${d.deep_model_loaded ? "loaded" : "unavailable"} · Acoustic ML: ${d.baseline_model_loaded ? "loaded" : "unavailable"} · Diarization: ${d.diarization || "unavailable"} · Language: ${d.language_detection ? "loaded" : "not configured"}. Confidence percentages require deployment validation.`;
-  } catch {
+  } catch (error) {
     $("connectionText").textContent = "Analysis engine offline";
     $("connectionDot").style.background = "#a84d53";
     $("capabilityDetails").textContent =
-      "Run the VoiceGuard FastAPI server on http://127.0.0.1:8000. A static-only page cannot run Python models.";
+      error.message || "The analysis backend is unavailable.";
   }
 }
 
@@ -330,7 +337,7 @@ async function samples() {
         if (state.busy || state.recording) return;
         b.disabled = true;
         try {
-          const r = await fetch(API_BASE + item.url);
+          const r = await fetch(apiUrl(item.url));
           if (!r.ok) throw Error("Sample could not be loaded.");
           chooseFile(
             new File([await r.blob()], item.filename, { type: "audio/wav" }),
@@ -1045,7 +1052,7 @@ async function startRecording() {
     state.context = new (window.AudioContext || window.webkitAudioContext)();
     await state.context.resume();
     try {
-      await state.context.audioWorklet.addModule("/recorder-worklet.js");
+      await state.context.audioWorklet.addModule("recorder-worklet.js");
       state.worklet = new AudioWorkletNode(
         state.context,
         "voiceguard-recorder",
@@ -1073,6 +1080,12 @@ async function startRecording() {
     state.full = [];
     state.pending = [];
     state.samples = 0;
+    const session = await api('/api/live-sessions', { method: 'POST' });
+    state.liveSession = session.session_id;
+    state.liveChunkIndex = 0;
+    state.liveSentSamples = 0;
+    state.livePacket = null;
+    state.liveBusy = false;
     state.recording = true;
     state.recordToken++;
     state.recordStart = Date.now();
@@ -1153,26 +1166,36 @@ async function startRecording() {
 }
 
 async function streamWindow() {
-  if (!state.recording || state.liveBusy || !state.pending.length) return;
+  if (!state.recording || state.liveBusy || (!state.pending.length && !state.livePacket)) return;
   const token = state.recordToken;
   state.liveBusy = true;
-  const parts = state.pending;
-  state.pending = [];
   const sampleRate = state.context.sampleRate;
+  if (!state.livePacket) {
+    const parts = [];
+    let remaining = 8 * sampleRate;
+    while (remaining > 0 && state.pending.length) {
+      const part = state.pending.shift();
+      const count = Math.min(remaining, part.length);
+      parts.push(part.subarray(0, count));
+      if (count < part.length) state.pending.unshift(part.subarray(count));
+      remaining -= count;
+    }
+    state.livePacket = { parts, samples: 8 * sampleRate - remaining,
+      start: state.liveSentSamples / sampleRate, index: state.liveChunkIndex,
+      session: state.liveSession, transcript: state.transcript };
+  }
+  const packet = state.livePacket;
   const controller = new AbortController();
   state.liveAbort = controller;
   const timeout = setTimeout(() => controller.abort(), 25000);
   try {
-    let kept = 0;
-    const bounded = [];
-    for (let i = parts.length - 1; i >= 0 && kept < 8 * sampleRate; i--) {
-      bounded.unshift(parts[i]);
-      kept += parts[i].length;
-    }
-    const blob = await pcmBlob(bounded, sampleRate),
+    const blob = await pcmBlob(packet.parts, sampleRate),
       form = new FormData();
     form.append("file", blob, "live-window.wav");
-    if (state.transcript) form.append("transcript", state.transcript);
+    form.append('session_id', packet.session);
+    form.append('chunk_index', packet.index);
+    form.append('chunk_start_sec', packet.start);
+    if (packet.transcript) form.append("transcript", packet.transcript);
 
     const r = await api("/api/analyze-chunk", {
       method: "POST",
@@ -1180,6 +1203,9 @@ async function streamWindow() {
       signal: controller.signal,
     });
     if (!state.recording || token !== state.recordToken) return;
+    state.liveSentSamples += packet.samples;
+    state.liveChunkIndex++;
+    state.livePacket = null;
     if (r.analysis?.risk_score != null) {
       $("liveRisk").textContent = `${Math.round(r.analysis.risk_score)} / 100 · ${r.analysis.risk_level}`;
     } else {
@@ -1187,18 +1213,21 @@ async function streamWindow() {
     }
     $("liveLanguage").textContent = langText(r.language);
     $("liveVocal").textContent = r.vocal_state?.label || "Measured";
-    $("liveStatus").textContent = "● STREAMING · WINDOW ANALYZED";
+    const speakerCount = r.diarization?.num_speakers;
+    $("liveStatus").textContent = speakerCount == null
+      ? '● STREAMING · SPEAKERS UNCERTAIN'
+      : `● STREAMING · ${speakerCount} SPEAKER${speakerCount === 1 ? '' : 'S'} ESTIMATED`;
   } catch (e) {
     if (e.name !== "AbortError") {
       console.warn("[VoiceGuard] Live window analysis error:", e.message || e);
     }
     if (state.recording && token === state.recordToken) {
-      $("liveRisk").textContent = "Monitoring live audio";
-      $("liveStatus").textContent = "● LISTENING";
+      $("liveRisk").textContent = e.name === "AbortError" ? "Analysis timed out; retrying the same audio window…" : e.message;
+      $("liveStatus").textContent = "● RECORDING · ANALYSIS RETRYING";
     }
   } finally {
     clearTimeout(timeout);
-    state.liveBusy = false;
+    if (token === state.recordToken) state.liveBusy = false;
   }
 }
 
@@ -1209,6 +1238,11 @@ async function cleanupRecording() {
   clearInterval(state.recordTimer);
   cancelAnimationFrame(state.liveFrame);
   state.liveAbort?.abort();
+  const sessionId = state.liveSession;
+  state.liveSession = null;
+  state.livePacket = null;
+  state.liveBusy = false;
+  if (sessionId) api(`/api/live-sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' }).catch(() => {});
   stopSpeechRecognition();
   state.stream?.getTracks().forEach((t) => t.stop());
   state.worklet?.disconnect();

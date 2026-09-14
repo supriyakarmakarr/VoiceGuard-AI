@@ -29,3 +29,48 @@ No real-world detector accuracy, speaker-count accuracy, calibrated confidence, 
 
 Initial tests with unpinned newest audio dependencies failed because Windows application control blocked a library. The final pinned stable audio stack loaded successfully; no operating-system protection was disabled.
 
+
+
+## Speaker-first and deployment repair verification — 2026-09-14
+
+Reviewed active decode/resampling, VAD candidate regions, neural segmentation,
+learned embeddings, automatic clustering, overlap exclusion, per-speaker CNN/ML/DSP
+fusion, API serialization, live context/retries and frontend count/cards/timeline.
+The old standalone diarizer had unconditional one-speaker fallbacks and a
+frequency-dominated embedding. It now delegates to the same pretrained pipeline;
+silence and missing evidence do not produce an invented count. Empty segmentation
+is explicitly insufficient evidence. Counts and labels remain estimates.
+
+- Final full Python suite from the deployable Git repository: **82 passed** in
+  261.32 seconds. Includes real CNN, acoustic ML, neural speaker and Whisper
+  inference, risk/voiceprint/telephony regressions, CORS, HTTPS proxy handling,
+  and safe JSON responses for unexpected inference failures. One upstream
+  Starlette/httpx deprecation warning remains.
+- Real recorded fixtures: 1, 2, 3, 4 voices; returning A-B-A; consecutive A-B-C-D
+  without inserted pauses; resampling to/from 22.05 kHz; noisy speech;
+  overlap probe; silence and low/normal-amplitude white noise uploaded through API.
+- Live session tests: returning voices, 3.5-second chunk boundaries, retained
+  context, bounded/ordered chunks, retry idempotency, session isolation and expiry.
+- JavaScript tests: actual generated 1–4 voice reports render count/cards/lanes;
+  live queue/retry behavior; AudioWorklet capture; report export; animation;
+  production/local API configuration; transport, auth and non-JSON error handling.
+- Static frontend build ran successfully with an HTTPS test address; empty,
+  loopback and `/api`-suffixed production addresses were rejected.
+- Linux/Python 3.12 wheel dependency dry-run resolved successfully. This is
+  dependency resolution, not a hosted Linux inference run.
+- Real Uvicorn startup used `PORT=8010`, bound `0.0.0.0`, and served the frontend.
+  Browser sample upload/job polling completed: 1 estimated speaker, LOW score
+  5/100, separate CNN/acoustic/DSP evidence, speaker card/timeline and report button.
+
+Limits: fixtures cover four recorded voices, not a diverse held-out diarization
+benchmark or every overlap. Very short, similar or fully overlapping voices may
+merge or split. Physical microphone input was not recorded; live API, WAV encoding,
+worklet and UI queue behavior were tested. The outer working folder has an incomplete optional Whisper package and reports
+language unavailable honestly. The deployable Git repository has a complete
+Whisper runtime; its final real-audio tests confirmed language detection loaded.
+Production installs the required package and verifies language and speaker models
+at build/startup. No mock counts or mock detector output were added to production.
+The Render service and public HTTPS path still require account-side deployment;
+no production backend URL has been invented or claimed tested.
+
+Strict production startup was also exercised with `VOICEGUARD_REQUIRE_MODELS=true`: CNN, acoustic ML, multilingual Whisper, neural diarization and live tracking all loaded, and `/api/health` returned ready.

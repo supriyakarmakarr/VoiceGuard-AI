@@ -3,15 +3,25 @@ services:
     name: voiceguard-ai
     runtime: python
     region: oregon
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python -m uvicorn api.server:app --host 0.0.0.0 --port $PORT --workers 1"
+    # CPU inference loads CNN, speaker models and multilingual Whisper together.
+    plan: standard
+    buildCommand: "pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt && python scripts/setup_speech_models.py"
+    startCommand: "python main.py"
+    healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10
-      - key: VOICEGUARD_API_KEY
-        generateValue: true
+      - key: HOST
+        value: 0.0.0.0
+      # Render terminates HTTPS before forwarding to this private service.
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"
+      - key: VOICEGUARD_REQUIRE_MODELS
+        value: "true"
+      - key: VOICEGUARD_ALLOWED_ORIGINS
+        value: https://supriyakarmakarr.github.io
+      # Explicit public demo; for private use disable and set VOICEGUARD_API_KEY.
       - key: API_DEMO_MODE
-        value: "false"
-# Configure an adequate memory tier for PyTorch before deployment.
-# Build never retrains or overwrites the supplied checkpoints.
+        value: "true"
+# One process/instance: jobs and live session audio are held in memory.
+# This build downloads pretrained speech weights; it never trains/replaces the CNN.

@@ -13,3 +13,6 @@ matplotlib>=3.8,<4
 pandas>=2,<4
 tqdm>=4.65
 requests>=2.31
+
+# Required production speech inference (weights installed during the build).
+-r requirements-speech.txt

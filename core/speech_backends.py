@@ -7,6 +7,10 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / '.runtime'
+SPEAKER_RUNTIME = ROOT / '.speaker-runtime'
+if SPEAKER_RUNTIME.is_dir():
+    # Isolate the matched sherpa Python/native pair from optional ASR packages.
+    site.addsitedir(str(SPEAKER_RUNTIME))
 if RUNTIME.is_dir():
     # Keep the existing NumPy/PyTorch stack ahead of optional project-local packages.
     site.addsitedir(str(RUNTIME))
@@ -63,9 +67,11 @@ class NeuralDiarizer:
     """Pretrained segmentation, speaker embeddings, and automatic clustering on CPU."""
     def __init__(self):
         self.pipeline = None
+        self.error = None
         segmentation = Path(os.getenv('VOICEGUARD_SEGMENTATION_MODEL', str(MODEL_DIR / 'speaker-segmentation.onnx')))
         embedding = Path(os.getenv('VOICEGUARD_EMBEDDING_MODEL', str(ROOT / 'speaker-embedding-multilingual.onnx')))
         if not segmentation.is_file() or not embedding.is_file():
+            self.error = 'Speaker model files are missing. Run scripts/setup_speech_models.py.'
             return
         try:
             import sherpa_onnx
@@ -80,7 +86,9 @@ class NeuralDiarizer:
             if not config.validate():
                 raise ValueError('Invalid diarization model configuration')
             self.pipeline = sherpa_onnx.OfflineSpeakerDiarization(config)
-        except Exception:
+        except Exception as exc:
+            self.pipeline = None
+            self.error = f'Speaker backend unavailable ({type(exc).__name__}). Run scripts/setup_speech_models.py --install-runtime.'
             LOG.exception('Pretrained ONNX diarization unavailable')
 
     def turns(self, y):
@@ -115,3 +123,44 @@ def exclusive_turns(turns, all_turns):
         output.extend({'speaker': turn['speaker'], 'start': a, 'end': b, 'duration': b-a}
                       for a, b in spans if b-a >= .08)
     return output
+
+
+class LiveSpeakerTracker:
+    """Bounded in-memory recording context for global learned speaker clustering.
+
+    Re-cluster the received prefix instead of adding independent chunk counts.
+    The same pretrained embedding model sees earlier and returning speech; labels
+    are ordered by first appearance and provisional assignments can be revised.
+    No voiceprints or recordings are persisted to disk.
+    """
+    def __init__(self):
+        self.audio = np.empty(0, dtype=np.float32)
+
+    def update(self, y, diarizer, start_sec):
+        start = round(start_sec * SR)
+        if abs(start - len(self.audio)) > 32:
+            raise ValueError('Live audio must be contiguous and ordered')
+        audio = np.concatenate([self.audio, np.asarray(y, dtype=np.float32)])
+        if len(audio) > 120 * SR + 32:
+            raise ValueError('Live recording exceeds 120 seconds')
+        from core.forensic_pipeline import speech_regions
+        # Keep valid received audio if inference fails; the next chunk can retry
+        # diarization over this context while risk analysis continues.
+        self.audio = audio
+        result = diarizer.run(audio, speech_regions(audio))
+        end_sec = start_sec + len(y)/SR
+        turns = []
+        for turn in result['speaker_turns']:
+            a, b = max(start_sec, turn['start']), min(end_sec, turn['end'])
+            if b > a:
+                turns.append({**turn, 'start': round(a-start_sec, 3),
+                              'end': round(b-start_sec, 3), 'duration': round(b-a, 3)})
+        return {**result, 'speaker_turns': turns, 'scope': 'live_session',
+                'status': 'provisional' if result['num_speakers'] else result['status'],
+                'chunk_start_sec': start_sec,
+                'session_turns': result['speaker_turns'],
+                'speaker_ids': list(dict.fromkeys(t['speaker'] for t in result['speaker_turns'])),
+                'analyzed_through_sec': round(len(audio)/SR, 3),
+                'limitations': [*result['limitations'],
+                    'Live speaker labels are provisional and may be revised as more speech arrives.',
+                    'The complete received recording is clustered together; short, similar or overlapping voices may remain unresolved.']}

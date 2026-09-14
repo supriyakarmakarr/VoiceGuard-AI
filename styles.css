@@ -1,7 +1,7 @@
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 */
 /* Hallmark · macrostructure: Workbench · tone: soft editorial · anchor hue: indigo */
 @import url("tokens.css");
-  
+
 :root {
   font-family:var(--font-body);
   color:var(--ink);
@@ -1919,7 +1919,7 @@ details[open]>p, #uploadPanel:not([hidden]), #livePanel:not([hidden]), .toast:no
  }
 
 @media(max-width:800px)  {
-  
+
  .hero  {
    gap:24px;
    }
@@ -1945,7 +1945,7 @@ details[open]>p, #uploadPanel:not([hidden]), #livePanel:not([hidden]), .toast:no
 }
 
 @media(max-width:520px)  {
-  
+
  .section  {
    padding-block:64px;
    }
@@ -2068,3 +2068,17 @@ details[open]>p, #uploadPanel:not([hidden]), #livePanel:not([hidden]), .toast:no
   transform:none!important}
 }
 
+
+/* Speaker evidence overview: all voices remain visible while one is inspected. */
+.speaker-overview {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:12px;margin:24px 0}
+.speaker-overview-card {display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;padding:18px;border:1px solid var(--line);border-radius:10px;background:var(--white);transition:background .2s var(--ease-out),transform .2s var(--ease-out)}
+.speaker-overview-card:hover {transform:translateY(-2px)}
+.speaker-overview-card[aria-pressed=true] {background:var(--color-lavender);border-color:var(--blue)}
+.speaker-overview-card strong {font-size:21px;color:var(--blue)}
+.speaker-overview-card .subtle {margin:0}
+.speaker-overview-name {font-weight:600}
+#speakerCountTitle {margin-bottom:12px}
+.speech-language-label {display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;margin-bottom:10px}
+.speech-language-label select {font:inherit;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:6px;min-height:44px;padding:8px}
+select:focus-visible {outline:3px solid var(--blue);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.speaker-overview-card {transition:none}.speaker-overview-card:hover {transform:none}}

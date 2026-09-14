@@ -8,6 +8,7 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 MODELS = ROOT / 'models' / 'pretrained'
 
 def download(url, destination):
@@ -45,8 +46,12 @@ def main():
     parser.add_argument('--install-runtime', action='store_true', help='Install pinned Python speech dependencies into project .runtime')
     args = parser.parse_args()
     if args.install_runtime:
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '--target', str(ROOT / '.runtime'),
-                        '-r', str(ROOT / 'requirements-speech.txt')], check=True)
+        # Install the Python wrapper and matching native core together. Keep these
+        # separate from older optional ONNX runtimes used by language packages.
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', '--target', str(ROOT / '.speaker-runtime'),
+                        'sherpa-onnx==1.13.8', 'sherpa-onnx-core==1.13.8'], check=True)
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', '--target', str(ROOT / '.runtime'),
+                        'faster-whisper==1.2.1'], check=True)
     for name in ['model.bin', 'config.json', 'tokenizer.json', 'vocabulary.txt']:
         download('https://huggingface.co/Systran/faster-whisper-small/resolve/main/' + name,
                  MODELS / 'whisper-small' / name)
@@ -57,7 +62,14 @@ def main():
         member = next(m for m in source.getmembers() if m.isfile() and m.name.endswith('/model.onnx'))
         (MODELS / 'speaker-segmentation.onnx').write_bytes(source.extractfile(member).read())
     download('https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx', ROOT / 'speaker-embedding-multilingual.onnx')
-    print('Setup complete. Restart VoiceGuard and check connection capabilities.')
+    from core.speech_backends import NeuralDiarizer
+    diarizer = NeuralDiarizer()
+    if diarizer.pipeline is None:
+        raise RuntimeError(diarizer.error)
+    from core.speech_backends import LanguageDetector
+    if LanguageDetector().model is None:
+        raise RuntimeError('Language model initialization failed. Check the installed speech requirements and model files.')
+    print('Speaker and language model initialization verified. Restart VoiceGuard and check connection capabilities.')
 
 if __name__ == '__main__':
     main()

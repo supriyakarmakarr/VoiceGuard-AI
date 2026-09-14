@@ -1,5 +1,7 @@
 """VoiceGuard API: in-memory jobs, bounded audio processing, honest capabilities."""
 import asyncio
+import copy
+import hashlib
 import hmac
 import json
 import logging
@@ -13,12 +15,13 @@ from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from core.forensic_pipeline import ForensicPipeline, AudioError, MAX_BYTES, decode_audio, acoustic_features, speech_regions
 from api.security import enforce_security_and_rate_limit
+from core.speech_backends import LiveSpeakerTracker
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG = logging.getLogger(__name__)
@@ -27,6 +30,9 @@ jobs = {}
 jobs_lock = threading.Lock()
 processing_lock = threading.Lock()
 JOB_TTL = 900
+live_sessions = {}
+LIVE_TTL = 180
+MAX_LIVE_SESSIONS = 32
 STAGES = ['Reading audio', 'Detecting speech', 'Separating speakers', 'Identifying language', 'Extracting acoustic features', 'Running trained models', 'Cross-checking forensic signals', 'Assessing confidence', 'Generating forensic report']
 
 
@@ -34,11 +40,16 @@ STAGES = ['Reading audio', 'Detecting speech', 'Separating speakers', 'Identifyi
 async def lifespan(app):
     global pipeline
     pipeline = await run_in_threadpool(ForensicPipeline, ROOT)
+    if os.getenv('VOICEGUARD_REQUIRE_MODELS', 'false').lower() == 'true':
+        capabilities = pipeline.capabilities()
+        if not all(capabilities.get(k) for k in ('baseline_model_loaded', 'deep_model_loaded', 'language_detection', 'live_speaker_tracking')):
+            raise RuntimeError('Required analysis models failed to load. Check build logs and run scripts/setup_speech_models.py.')
     async def expire_reports():
         while True:
             await asyncio.sleep(15)
             with jobs_lock:
                 cleanup_jobs()
+            await run_in_threadpool(expire_live_sessions)
     expiry_task = asyncio.create_task(expire_reports())
     yield
     expiry_task.cancel()
@@ -50,6 +61,7 @@ async def lifespan(app):
     if pending:
         await asyncio.gather(*pending, return_exceptions=True)
     jobs.clear()
+    live_sessions.clear()
 
 
 app = FastAPI(title='VoiceGuard AI · Voice Forensics', version='3.0.0', lifespan=lifespan)
@@ -71,18 +83,18 @@ class BodySizeLimit:
         await self.app(scope, bounded_receive, send)
 
 app.add_middleware(BodySizeLimit)
-default_origins = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:3000', 'http://localhost:3000']
-configured_origins = [s.strip() for s in os.getenv('VOICEGUARD_ALLOWED_ORIGINS', '').split(',') if s.strip()]
+# One exact origin allowlist for preflight and write requests. Paths are not origins.
+default_origins = ['https://supriyakarmakarr.github.io'] + [
+    f'http://{host}:{port}' for host in ('localhost', '127.0.0.1', '[::1]')
+    for port in (8000, 5500, 3000, 5173)]
+configured_origins = [s.strip().rstrip('/') for s in os.getenv('VOICEGUARD_ALLOWED_ORIGINS', '').split(',') if s.strip()]
 origins = configured_origins or default_origins
-app.add_middleware(CORSMiddleware, allow_origins=['*'] if not configured_origins else origins,
-                   allow_credentials=False, allow_methods=['GET', 'POST', 'DELETE', 'OPTIONS'],
-                   allow_headers=['Content-Type', 'X-API-Key', 'Accept', 'Origin'])
 
 
 @app.middleware('http')
 async def security_headers(request: Request, call_next):
     origin = request.headers.get('origin')
-    is_local_origin = not origin or origin == 'null' or origin == str(request.base_url).rstrip('/') or origin.startswith('http://127.0.0.1') or origin.startswith('http://localhost') or (configured_origins and origin in configured_origins)
+    is_local_origin = not origin or origin == str(request.base_url).rstrip('/') or origin in origins
     if request.method in ('POST', 'DELETE') and origin and not is_local_origin:
         return JSONResponse({'detail': 'Origin is not allowed.'}, status_code=403)
     try:
@@ -90,7 +102,11 @@ async def security_headers(request: Request, call_next):
             return JSONResponse({'detail': 'Upload exceeds 25 MB.'}, status_code=413)
     except ValueError:
         return JSONResponse({'detail': 'Invalid content length.'}, status_code=400)
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        LOG.exception('API request failed')
+        response = JSONResponse({'detail': 'Analysis service failed to process the request. Check backend logs or retry.'}, status_code=500)
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'same-origin'
     response.headers['X-Frame-Options'] = 'DENY'
@@ -99,6 +115,13 @@ async def security_headers(request: Request, call_next):
     if request.url.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store'
     return response
+
+
+# Added last so CORS also wraps errors produced by the security/body middleware.
+app.add_middleware(CORSMiddleware, allow_origins=origins,
+                   allow_credentials=False, allow_methods=['GET', 'POST', 'DELETE', 'OPTIONS'],
+                   allow_headers=['Content-Type', 'X-API-Key', 'Authorization', 'Accept'],
+                   expose_headers=['Retry-After', 'Content-Disposition'])
 
 
 @app.exception_handler(AudioError)
@@ -127,7 +150,29 @@ def analyze_locked(data, filename, **kwargs):
     if not processing_lock.acquire(blocking=True, timeout=8.0):
         raise HTTPException(429, 'The analysis engine is busy. Please retry shortly.', headers={'Retry-After': '3'})
     try:
-        return engine.analyze(data, filename, **kwargs)
+        session_id = kwargs.pop('live_session_id', '')
+        chunk_index = kwargs.pop('live_chunk_index', 0)
+        start_sec = kwargs.get('chunk_start_sec', 0.)
+        if not session_id:
+            return engine.analyze(data, filename, **kwargs)
+        session = live_sessions.get(session_id)
+        if session is None or time.monotonic() - session['updated'] > LIVE_TTL:
+            live_sessions.pop(session_id, None)
+            raise HTTPException(404, 'Live speaker session expired. Start a new recording.')
+        digest = hashlib.sha256(data + repr(start_sec).encode()).hexdigest()
+        if chunk_index == session['next_index'] - 1 and digest == session.get('digest'):
+            return session['result']
+        if chunk_index != session['next_index']:
+            raise HTTPException(409, 'Live chunks must be submitted in sequence.')
+        y, _ = decode_audio(data, filename)
+        end_sec = start_sec + len(y)/16000
+        if abs(start_sec - session['end_sec']) > .002 or end_sec > 120.002:
+            raise HTTPException(422, 'Live timestamps must be contiguous and within the 120 second session limit.')
+        tracker = copy.deepcopy(session['tracker'])
+        result = engine.analyze(data, filename, speaker_tracker=tracker, **kwargs)
+        session.update(tracker=tracker, next_index=chunk_index+1, end_sec=end_sec,
+                       updated=time.monotonic(), digest=digest, result=result)
+        return result
     finally:
         processing_lock.release()
 
@@ -160,13 +205,42 @@ async def analyze_audio(file: UploadFile = File(...), threshold_low: float = For
 
 @app.post('/api/analyze-chunk')
 async def analyze_chunk(file: UploadFile = File(...), chunk_index: int = Form(0), transcript: str = Form(''),
-                        language: str = Form(''), _auth=Depends(enforce_security_and_rate_limit)):
+                        language: str = Form(''), session_id: str = Form(''), chunk_start_sec: float = Form(0., ge=0., le=120.),
+                        _auth=Depends(enforce_security_and_rate_limit)):
     name = file.filename or 'chunk.wav'
     data = await read_upload(file)
-    result = await run_in_threadpool(analyze_locked, data, name, chunk=True, transcript=transcript, language=language)
+    result = await run_in_threadpool(analyze_locked, data, name, chunk=True, transcript=transcript, language=language,
+                                    live_session_id=session_id, live_chunk_index=chunk_index, chunk_start_sec=chunk_start_sec)
     risk = result['analysis']
     return {**result, 'chunk_index': chunk_index, 'risk_score': risk['risk_score'], 'risk_level': risk['risk_level'],
             'confidence': None, 'alert': risk['risk_level'] == 'HIGH', 'calibration_mode': 'unvalidated'}
+
+
+def expire_live_sessions():
+    with processing_lock:
+        for key in list(live_sessions):
+            if time.monotonic() - live_sessions[key]['updated'] > LIVE_TTL:
+                del live_sessions[key]
+
+
+@app.post('/api/live-sessions', status_code=201)
+def create_live_session(_auth=Depends(enforce_security_and_rate_limit)):
+    require_pipeline()
+    expire_live_sessions()
+    with processing_lock:
+        if len(live_sessions) >= MAX_LIVE_SESSIONS:
+            raise HTTPException(429, 'Live speaker session capacity reached. Retry shortly.')
+        session_id = secrets.token_urlsafe(24)
+        live_sessions[session_id] = {'tracker': LiveSpeakerTracker(), 'next_index': 0,
+                                     'end_sec': 0., 'updated': time.monotonic()}
+    return {'session_id': session_id, 'expires_in_seconds': LIVE_TTL}
+
+
+@app.delete('/api/live-sessions/{session_id}')
+def delete_live_session(session_id: str, _auth=Depends(enforce_security_and_rate_limit)):
+    with processing_lock:
+        live_sessions.pop(session_id, None)
+    return {'deleted': True}
 
 
 def cleanup_jobs():
@@ -341,8 +415,15 @@ def index():
     return FileResponse(ROOT / 'index.html')
 
 
+@app.get('/api-config.js')
+def frontend_config(request: Request):
+    # When FastAPI serves the UI, use its actual origin, including custom PORT.
+    return Response('window.VOICEGUARD_CONFIG = {API_URL: window.location.origin};',
+                    media_type='application/javascript', headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/{asset}')
 def static_asset(asset: str):
-    if asset not in {'tokens.css', 'styles.css', 'script.js', 'app.js', 'core-visual.js', 'recorder-worklet.js'}:
+    if asset not in {'tokens.css', 'styles.css', 'script.js', 'app.js', 'core-visual.js', 'recorder-worklet.js', 'api-config.js'}:
         raise HTTPException(404, 'Not found.')
     return FileResponse(ROOT / asset, media_type='text/css' if asset.endswith('.css') else 'application/javascript')

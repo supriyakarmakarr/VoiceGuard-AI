@@ -209,6 +209,11 @@ class Diarization:
 
     @staticmethod
     def finish(turns, method, status, overlap_supported, limitations, count='auto'):
+        if not turns:
+            count = None
+            if status == 'estimated':
+                status = 'insufficient_evidence'
+                limitations = [*limitations, 'No speech was attributed by the segmentation model.']
         turns.sort(key=lambda t: t['start'])
         for t in turns:
             t['duration'] = round(t['end'] - t['start'], 3)
@@ -257,6 +262,8 @@ class ForensicPipeline:
                 'language_detection': self.language.model is not None,
                 'language_backend': 'multilingual_whisper' if self.language.model is not None else 'unavailable',
                 'diarization': 'pyannote' if self.diarization.pipeline is not None else 'pretrained_onnx' if self.diarization.neural.pipeline is not None else 'acoustic estimate (count unavailable)',
+                'diarization_error': self.diarization.neural.error,
+                'live_speaker_tracking': self.diarization.neural.pipeline is not None or self.diarization.pipeline is not None,
                 'confidence_calibration': 'Not validated for deployment audio',
                 'vocal_state': 'Measured acoustic features; emotional labels withheld',
                 'max_bytes': MAX_BYTES, 'max_duration_seconds': MAX_SECONDS, 'formats': sorted(FORMATS)}
@@ -354,7 +361,7 @@ class ForensicPipeline:
                 'verdict': {'en': 'Insufficient evidence' if score is None else f'{level.title()} acoustic concern · review required'},
                 'advisory': {'title': 'Verify through another trusted channel', 'recommendation': RECOMMENDATIONS[0]}}
 
-    def analyze(self, data, filename, progress=None, chunk=False, low=30., high=70., codec='none', transcript='', language=''):
+    def analyze(self, data, filename, progress=None, chunk=False, low=30., high=70., codec='none', transcript='', language='', speaker_tracker=None, chunk_start_sec=0.):
         started = time.monotonic()
         update = progress or (lambda stage: None)
         update(0)
@@ -385,7 +392,18 @@ class ForensicPipeline:
                    'candidate_speech_seconds': round(speech_time, 2), 'rms_dbfs': round(20 * np.log10(rms + 1e-9), 1),
                    'spectral_flatness': round(flatness, 4), 'vad_method': 'Energy-based candidate speech detection'}
         update(2)
-        diar = self.diarization.run(y, regions) if not chunk else {'num_speakers': None, 'speaker_turns': [], 'status': 'deferred', 'method': 'full recording required', 'confidence': None, 'overlap_supported': False, 'limitations': ['Live windows have no persistent speaker identity; stop to analyze the full recording.']}
+        if chunk and speaker_tracker is not None:
+            try:
+                diar = speaker_tracker.update(y, self.diarization, chunk_start_sec)
+            except Exception:
+                LOG.exception('Live speaker matching failed; risk analysis continues')
+                diar = Diarization.finish([], 'pretrained_onnx', 'unavailable', False,
+                    ['Live speaker matching failed for this window.'], count=None)
+        else:
+            diar = self.diarization.run(y, regions)
+        if chunk and speaker_tracker is None:
+            diar['scope'] = 'chunk'
+            diar['limitations'].append('No live session was supplied; these labels apply only to this chunk.')
         update(3)
         if (not regions and rms < .0002) or (speech_time < 0.05 and rms < .0002):
             lang_result = {'status': 'insufficient_evidence', 'label': 'Unknown', 'languages': [], 'segments': [], 'reason': 'No usable speech.'}
@@ -396,6 +414,8 @@ class ForensicPipeline:
         update(5)
         speakers = []
         for name in dict.fromkeys(t['speaker'] for t in diar['speaker_turns']):
+            if name.startswith('Unassigned'):
+                continue
             turns = [t for t in diar['speaker_turns'] if t['speaker'] == name]
             clean_turns = exclusive_turns(turns, diar['speaker_turns'])
             pieces = [y[int(t['start'] * SR):int(t['end'] * SR)] for t in clean_turns]
@@ -425,7 +445,7 @@ class ForensicPipeline:
                              'vocal_state': acoustic_features(spk_y),
                              'suspicious_intervals': suspicious, 'attribution_confidence': diar['status']})
         update(6)
-        if speakers:
+        if speakers and not chunk:
             available = [s['analysis'] for s in speakers if s['analysis']['risk_score'] is not None]
             if available:
                 overall = dict(max(available, key=lambda r: r['risk_score']))

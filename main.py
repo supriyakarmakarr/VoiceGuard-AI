@@ -33,10 +33,12 @@ os.makedirs(os.environ['NUMBA_CACHE_DIR'], exist_ok=True)
 import uvicorn
 
 if __name__ == "__main__":
+    host = os.getenv("HOST", "0.0.0.0" if os.getenv("PORT") else "127.0.0.1")
+    port = int(os.getenv("PORT", "8000"))
     print("=" * 70)
     print(">> SIH26104 - VoiceGuard AI Platform")
     print(f"[*] Project Root: {PROJECT_ROOT}")
-    print("[*] Starting Web Server: http://127.0.0.1:8000")
+    print(f"[*] Starting Web Server: http://{host}:{port}")
     print("[*] Press CTRL+C to stop the server.")
     print("=" * 70)
-    uvicorn.run("api.server:app", host="127.0.0.1", port=8000, reload=os.getenv("VOICEGUARD_DEV_RELOAD", "false").lower() == "true")
+    uvicorn.run("api.server:app", host=host, port=port, workers=1, proxy_headers=True, forwarded_allow_ips=os.getenv("FORWARDED_ALLOW_IPS", "127.0.0.1"), reload=os.getenv("VOICEGUARD_DEV_RELOAD", "false").lower() == "true")
